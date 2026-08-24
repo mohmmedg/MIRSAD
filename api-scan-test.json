@@ -1,0 +1,5 @@
+﻿{
+  "target": "http://127.0.0.1:8000",
+  "enable_graphql_introspection": true,
+  "probe_write_methods": false
+}

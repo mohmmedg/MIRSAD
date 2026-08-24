@@ -1,0 +1,114 @@
+/* styles/tokens.css
+ *
+ * نظام تصميم "غرفة العمليات": قاعدة داكنة هادئة (غرافيت مو أسود خالص)،
+ * وسلّم ألوان الخطورة (Critical→Info) هو العنصر البصري المميّز الأساسي —
+ * لأنه فعلاً جوهر البيانات، مو زخرفة مضافة. الأزرق التشغيلي (--accent-action)
+ * منفصل تماماً عن سلّم الخطورة عشان ما يتصادم بصرياً مع أي severity.
+ *
+ * v2: إضافة عمق (ظلال/تدرّجات طبقية) وخط عرض مميّز (Space Grotesk) لإحساس
+ * SaaS حديث، بدل السطح المسطّح بالنسخة الأولى.
+ */
+
+:root {
+  /* -- سطوح (طبقات عمق: void < panel < raised < overlay) -- */
+  --bg-void: #0a0d11;
+  --bg-canvas: radial-gradient(ellipse 1200px 800px at 15% -10%, #101820 0%, #0a0d11 55%);
+  --bg-panel: #12161c;
+  --bg-panel-raised: #171d24;
+  --bg-panel-hover: #1d2530;
+  --bg-overlay: #1f2833;
+  --line: #232b34;
+  --line-strong: #313c48;
+  --line-glow: rgba(62, 142, 247, 0.35);
+
+  /* -- نصوص -- */
+  --text-primary: #eef2f5;
+  --text-muted: #8a96a3;
+  --text-faint: #55626e;
+
+  /* -- سلّم الخطورة (العنصر المميّز — مشتق من محتوى المشروع نفسه) -- */
+  --sev-critical: #ff4d61;
+  --sev-critical-dim: #2c1319;
+  --sev-critical-glow: rgba(255, 77, 97, 0.18);
+  --sev-high: #ff9142;
+  --sev-high-dim: #2c1d10;
+  --sev-high-glow: rgba(255, 145, 66, 0.16);
+  --sev-medium: #f3c94d;
+  --sev-medium-dim: #2c2610;
+  --sev-medium-glow: rgba(243, 201, 77, 0.14);
+  --sev-low: #4fd8c9;
+  --sev-low-dim: #0f2b28;
+  --sev-low-glow: rgba(79, 216, 201, 0.14);
+  --sev-info: #8a96a3;
+  --sev-info-dim: #1a1f26;
+  --sev-info-glow: rgba(138, 150, 163, 0.1);
+
+  /* -- هوية مرصاد (Brand identity — منفصلة عمداً عن accent-action/accent-gradient
+     التشغيليَين حتى لا تتصادم مع أزرار/روابط الواجهة. هذه فقط لعلامة مرصاد:
+     الشعار، اسم المنصة بالـ Sidebar/شاشة الدخول. الفكرة: "منارة مراقبة" —
+     دفء الكهرمان (تنبيه/رصد) يلتقي بعمق نيلي ليلي (سكون تشغيلي). -- */
+  --brand-beacon: #f7b955;
+  --brand-beacon-deep: #d97c2b;
+  --brand-night: #3a2f86;
+  --brand-gradient: linear-gradient(135deg, #f7c876 0%, #ec8a3d 42%, #4b3a9e 100%);
+  --brand-glow: rgba(247, 185, 85, 0.28);
+
+
+  --accent-action: #4a90f7;
+  --accent-action-hover: #6aa4ff;
+  --accent-gradient: linear-gradient(135deg, #4a90f7 0%, #6a5cf7 100%);
+  --accent-ok: #2fd98a;
+  --accent-ok-dim: #0f2a20;
+
+  /* -- خط -- */
+  --font-display: "Space Grotesk", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-body: "Inter", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+
+  /* -- أبعاد/مسافات (شبكة 4px) -- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --rail-width: 380px;
+
+  /* -- ظلال (عمق) -- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  /* -- مواد زجاجية (Apple-style translucency: chrome/overlays فوق محتوى متحرك) -- */
+  --glass-bg: rgba(23, 29, 36, 0.72);
+  --glass-bg-strong: rgba(18, 22, 28, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --glass-border-top: rgba(255, 255, 255, 0.09);
+  --glass-blur: blur(20px) saturate(160%);
+
+  /* -- إيزينغ (منحنيات تحاكي سبرينغ آبل: critically-damped للحالة العامة،
+     وتوهّج/ارتداد خفيف فقط للتفاعلات اللي فيها "زخم" فعلي) -- */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1); /* damping≈1.0 — استقرار سلس بدون ارتداد */
+  --ease-spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-press: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-instant: 100ms; /* فيدباك اللمس — فوري، عالضغط مو الإفلات */
+  --dur-fast: 180ms;
+  --dur-base: 280ms;
+  --dur-slow: 420ms;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --line: #3a4552;
+    --line-strong: #56636f;
+    --text-muted: #aab4bf;
+    --glass-bg: rgba(15, 18, 23, 0.96);
+    --glass-border: rgba(255, 255, 255, 0.18);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-bg: var(--bg-panel);
+    --glass-bg-strong: var(--bg-panel);
+    --glass-blur: none;
+  }
+}

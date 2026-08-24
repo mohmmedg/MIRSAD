@@ -1,0 +1,1 @@
+{"id":"security-txt","name":"security.txt discovered","severity":"Info","path":"/.well-known/security.txt","method":"GET","status":[200],"body_regex":["(?im)^(?:contact|expires|policy):"] ,"tags":["discovery","security-contact"]}

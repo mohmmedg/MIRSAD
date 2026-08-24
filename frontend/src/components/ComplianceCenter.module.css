@@ -1,0 +1,231 @@
+/* ComplianceCenter.module.css
+ *
+ * نفس المشكلة الموجودة سابقاً بـ AdminPanel.module.css: متغيرات legacy غير معرّفة
+ * (--border, --panel, --text عبر var(--text)). أُعيدت الكتابة بنظام tokens.css الفعلي.
+ */
+
+.wrap {
+  display: grid;
+  gap: 14px;
+  padding: 4px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-action);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.header h3 {
+  font-family: var(--font-display);
+  margin: 5px 0;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.header button,
+.toolbar button,
+.card button {
+  border: 1px solid var(--line-strong);
+  background: var(--bg-panel-raised);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  min-height: 36px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  transition: border-color var(--dur-fast) var(--ease-press), background var(--dur-fast) var(--ease-press),
+    transform var(--dur-instant) var(--ease-press);
+}
+
+.header button:hover,
+.toolbar button:hover,
+.card button:hover {
+  border-color: var(--accent-action);
+  background: var(--bg-panel-hover);
+}
+
+.header button:active,
+.toolbar button:active,
+.card button:active {
+  transform: scale(0.97);
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 77, 97, 0.35);
+  background: var(--sev-critical-dim);
+  color: var(--sev-critical);
+  font-size: 12.5px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar select,
+.card input[type="number"] {
+  background: var(--bg-void);
+  border: 1px solid var(--line-strong);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stats div,
+.card {
+  border: 1px solid var(--line);
+  background: var(--bg-panel-raised);
+  border-radius: var(--radius-md);
+  padding: 13px 14px;
+  box-shadow: var(--shadow-inset);
+}
+
+.stats b {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+
+.stats span {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 12px;
+}
+
+.card h4 {
+  font-family: var(--font-display);
+  margin: 0 0 12px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.control,
+.result {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+  align-items: center;
+}
+
+.control div {
+  display: grid;
+  gap: 2px;
+}
+
+.control span,
+.control small,
+.result small {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+.on {
+  color: var(--accent-ok);
+  font-weight: 600;
+}
+
+.off {
+  color: var(--sev-critical);
+  font-weight: 600;
+}
+
+.card label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.card input[type="number"] {
+  width: 80px;
+}
+
+.toggle {
+  justify-content: flex-start !important;
+}
+
+.toggle input[type="checkbox"] {
+  accent-color: var(--accent-action);
+  width: 16px;
+  height: 16px;
+}
+
+.result {
+  grid-template-columns: auto auto 1fr auto auto;
+}
+
+.result em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.result small {
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  .grid,
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .result {
+    grid-template-columns: auto 1fr auto;
+  }
+  .result span:nth-child(3) {
+    display: none;
+  }
+}

@@ -1,0 +1,112 @@
+services:
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1000"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env.production
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      JOB_QUEUE_ENABLED: "true"
+      WORKER_MODE: "false"
+    expose: ["8000"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - scanner-data:/app/data
+
+    # IMPORTANT:
+    # Use asyncio + h11 because the default Uvicorn HTTP stack
+    # was accepting TCP connections but not completing HTTP requests
+    # in this production container.
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--loop",
+        "asyncio",
+        "--http",
+        "h11"
+      ]
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readiness', timeout=5)"
+        ]
+      interval: 15s
+      timeout: 10s
+      start_period: 30s
+      retries: 8
+
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env.production
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      JOB_QUEUE_ENABLED: "true"
+      WORKER_MODE: "true"
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - scanner-data:/app/data
+    command: ["python", "-m", "app.worker"]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_BASE_URL: ""
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?Set VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:?Set VITE_SUPABASE_ANON_KEY}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  scanner-data:

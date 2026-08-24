@@ -1,0 +1,171 @@
+services:
+
+  redis:
+    image: redis:8-alpine
+    command:
+      [
+        "redis-server",
+        "--appendonly", "yes",
+        "--save", "60", "1000",
+        "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"
+      ]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    # IMPORTANT:
+    # Use the latest Supabase production configuration.
+    env_file:
+      - path: ./backend/.env.production
+        required: true
+
+    # Values here override env_file for the same variable.
+    environment:
+      # DATABASE_URL is intentionally controlled by the root .env.
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in root .env}
+
+      # Redis inside Docker must use the Docker service name.
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+
+      # Scheduler DB remains controlled by root .env when supplied.
+      SCHEDULER_DATABASE_URL: ${SCHEDULER_DATABASE_URL:-}
+
+      # Worker/job settings for the API container.
+      DB_AUTO_CREATE_SCHEMA: "false"
+      JOB_QUEUE_ENABLED: "true"
+      WORKER_MODE: "false"
+
+      # Current local frontend origin.
+      # This prevents the browser at 127.0.0.1:5173 from being rejected by CORS.
+      CORS_ORIGINS: "http://127.0.0.1:5173,http://localhost:5173"
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+
+    # Force reliable public DNS resolvers instead of whatever the host/VPN
+    # hands the container. Avoids hangs when a VPN's DNS is slow or leaks.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+
+    volumes:
+      - scanner-data:/app/data
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/readiness', timeout=3)"
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    # Worker must use the SAME Supabase/Auth configuration as backend.
+    env_file:
+      - path: ./backend/.env.production
+        required: true
+
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in root .env}
+
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+
+      SCHEDULER_DATABASE_URL: ${SCHEDULER_DATABASE_URL:-}
+
+      DB_AUTO_CREATE_SCHEMA: "false"
+      JOB_QUEUE_ENABLED: "true"
+      WORKER_MODE: "true"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+
+    volumes:
+      - scanner-data:/app/data
+
+    command:
+      - "python"
+      - "-m"
+      - "app.worker"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import time; print('worker running')"
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    env_file:
+      - ./frontend/.env
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    ports:
+      - "5173:5173"
+
+    restart: unless-stopped
+
+
+volumes:
+  redis-data:
+  scanner-data:

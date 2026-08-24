@@ -1,0 +1,8 @@
+.wrap { display: flex; flex-direction: column; gap: 14px; }
+.hint {
+  padding: 12px 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+}

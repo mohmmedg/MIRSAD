@@ -1,0 +1,17 @@
+fastapi==0.141.1
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+pydantic-settings==2.6.1
+python-multipart==0.0.32
+httpx==0.28.1
+google-genai>=1.0.0,<2.0
+slowapi==0.1.9
+
+PyYAML==6.0.2
+
+reportlab==4.4.3
+SQLAlchemy==2.0.43
+psycopg2-binary==2.9.9
+redis==6.4.0
+
+PyJWT[crypto]==2.10.1

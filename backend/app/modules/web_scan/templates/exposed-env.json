@@ -1,0 +1,1 @@
+{"id":"exposed-env","name":"Exposed .env file","severity":"High","path":"/.env","method":"GET","status":[200],"body_regex":["(?m)^(?:APP_|DB_|API_|SECRET_|GEMINI_|AWS_|DATABASE_)\\w*\\s*="] ,"tags":["exposure","config"]}

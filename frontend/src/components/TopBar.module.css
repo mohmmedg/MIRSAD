@@ -1,0 +1,29 @@
+.topBar {
+  height: 62px; display: flex; align-items: center; gap: 18px; padding: 0 18px 0 20px;
+  background: var(--glass-bg-strong); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 50;
+}
+.mobileBrand { display: none; align-items: center; gap: 9px; min-width: 190px; }
+.logoIcon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--bg-panel-raised); border: 1px solid var(--glass-border); box-shadow: 0 2px 12px var(--brand-glow); }
+.wordmark { font: 600 14px/1.1 var(--font-display); display: flex; flex-direction: column; }
+.wordmarkSub { margin-top: 3px; color: var(--text-faint); font: 9px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.searchBox {
+  flex: 1; max-width: 680px; margin-inline: auto; height: 36px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; color: var(--text-faint); border: 1px solid var(--line); border-radius: 9px; background: rgba(10,13,17,.62);
+}
+.searchBox:focus-within { border-color: rgba(74,144,247,.45); box-shadow: 0 0 0 3px rgba(74,144,247,.07); }
+.searchBox input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--text-primary); font-size: 12px; }
+.searchBox kbd { color: var(--text-faint); border: 1px solid var(--line); border-radius: 5px; padding: 2px 5px; font: 9px var(--font-mono); white-space: nowrap; }
+.actions { display: flex; align-items: center; gap: 7px; }
+.statusBadge, .tenantButton, .langButton {
+  display: flex; align-items: center; gap: 7px; min-height: 32px; padding: 5px 9px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--bg-panel-raised); color: var(--text-muted);
+  font: 10px var(--font-mono);
+}
+.statusBadge svg { color: var(--accent-ok); }
+.iconButton { position: relative; display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-panel-raised); color: var(--text-muted); }
+.iconButton i { position: absolute; top: 7px; right: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--sev-high); }
+.tenantButton { color: var(--text-primary); }
+.langButton:hover, .tenantButton:hover, .iconButton:hover { border-color: var(--line-strong); color: var(--text-primary); }
+@media (max-width: 980px) { .mobileBrand { display: flex; } .searchBox { max-width: none; } }
+@media (max-width: 700px) { .statusBadge span, .tenantButton span, .searchBox kbd { display: none; } .topBar { gap: 8px; padding: 0 10px; } .mobileBrand { min-width: auto; } .wordmark { display: none; } }
