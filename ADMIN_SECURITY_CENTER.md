@@ -2,7 +2,7 @@
 
 This release extends the hardened Supabase build with a tenant-scoped administration center.
 
-## Included
+## Inclued
 - User lifecycle and RBAC management
 - Permission matrix endpoint
 - Security, scan, AI and notification policy storage
