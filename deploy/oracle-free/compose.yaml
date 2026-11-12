@@ -57,6 +57,7 @@ services:
       WORKER_MAX_CONCURRENT_JOBS: "1"
       EXTERNAL_ENGINE_PARALLELISM: "1"
       JOB_QUEUE_ENABLED: "true"
+      WORKER_MODE: "false"
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "asyncio", "--http", "h11", "--workers", "1"]
     restart: unless-stopped
     expose:
