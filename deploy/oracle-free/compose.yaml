@@ -1,0 +1,110 @@
+# Minimal, resource-constrained OCI A1 deployment.
+# This file does NOT run DefectDojo, ZAP, local PostgreSQL or the frontend.
+# Vercel hosts the UI; Supabase hosts PostgreSQL and Auth.
+name: mirsad-oracle
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      MIRSAD_API_DOMAIN: ${MIRSAD_API_DOMAIN:?Set a DNS hostname pointing to your VM}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+    mem_limit: 256m
+    security_opt:
+      - no-new-privileges:true
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set a strong REDIS_PASSWORD}"]
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=$${REDIS_PASSWORD} redis-cli ping | grep -q PONG"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set a strong REDIS_PASSWORD}
+
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    env_file:
+      - ../../backend/.env.production
+    environment: &shared_environment
+      DATABASE_URL: ${DATABASE_URL:?Set your Supabase PostgreSQL connection string}
+      SCHEDULER_DATABASE_URL: ${SCHEDULER_DATABASE_URL:?Set your Supabase PostgreSQL connection string}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?Set REDIS_PASSWORD}@redis:6379/0
+      ENFORCE_TARGET_SCOPE: "true"
+      ALLOWED_TARGETS: ${ALLOWED_TARGETS:?Explicitly allow only targets you own}
+      ENABLE_ZAP: "false"
+      DEFECTDOJO_ENABLED: "false"
+      ENABLE_PLAYWRIGHT: "false"
+      ENABLE_SEMGREP: "false"
+      ENABLE_TRIVY: "false"
+      WORKER_MAX_CONCURRENT_JOBS: "1"
+      EXTERNAL_ENGINE_PARALLELISM: "1"
+      JOB_QUEUE_ENABLED: "true"
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "asyncio", "--http", "h11", "--workers", "1"]
+    restart: unless-stopped
+    expose:
+      - "8000"
+    volumes:
+      - scan-data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    mem_limit: 3g
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readiness', timeout=5)"]
+      interval: 20s
+      timeout: 10s
+      retries: 6
+      start_period: 45s
+
+  worker:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    env_file:
+      - ../../backend/.env.production
+    environment:
+      <<: *shared_environment
+      WORKER_MODE: "true"
+    command: ["python", "-m", "app.worker"]
+    restart: unless-stopped
+    volumes:
+      - scan-data:/app/data
+    depends_on:
+      backend:
+        condition: service_healthy
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    mem_limit: 4g
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys,time,os; p='/tmp/worker_heartbeat'; sys.exit(0 if os.path.exists(p) and time.time()-os.path.getmtime(p)<60 else 1)"]
+      interval: 20s
+      timeout: 10s
+      retries: 6
+      start_period: 45s
+
+volumes:
+  redis-data:
+  scan-data:
+  caddy-data:
+  caddy-config:
