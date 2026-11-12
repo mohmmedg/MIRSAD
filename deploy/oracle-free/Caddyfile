@@ -1,0 +1,12 @@
+{
+  email ${ACME_EMAIL}
+}
+${MIRSAD_API_DOMAIN} {
+  encode zstd gzip
+  reverse_proxy backend:8000
+  header {
+    -Server
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+  }
+}
