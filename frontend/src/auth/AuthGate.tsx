@@ -23,7 +23,7 @@ import {
 } from "./supabase";
 import styles from "./AuthGate.module.css";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://127.0.0.1:8000");
 
 type SetupStatus = { self_service_signup_enabled: boolean };
 type AuthState = "loading" | "login" | "ready" | "mfa-enroll" | "mfa-challenge";
