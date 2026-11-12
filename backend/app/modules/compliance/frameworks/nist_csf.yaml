@@ -1,0 +1,45 @@
+framework: "NIST CSF"
+controls:
+  - control_id: NIST-ID.AM-1
+    title: Asset inventory
+    description: Assets are inventoried and monitored.
+    tags: [asset, network, dns]
+    max_severity: Medium
+  - control_id: NIST-PR.AC-4
+    title: Access permissions
+    description: Access permissions are managed and reviewed.
+    tags: [auth, authorization]
+    max_severity: High
+  - control_id: NIST-DE.CM-8
+    title: Vulnerability monitoring
+    description: Systems are monitored for vulnerabilities and changes.
+    tags: [scanner, asm, vulnerability]
+    max_severity: High
+  # Additional controls merged from mirsad-patch-v3.zip (Arabic-language,
+  # NIST CSF 2.0 function IDs) - kept alongside the entries above rather than
+  # replacing them, since both sets are valid, non-duplicate coverage.
+  - control_id: NIST-ID.AM
+    title: "جرد الأصول (Asset Management)"
+    description: "حصر الأصول العامة (نطاقات، IPs، خدمات) وربطها بمالك/جهة مسؤولة."
+    tags: [asset, network, dns]
+    max_severity: Medium
+  - control_id: NIST-ID.RA
+    title: "تقييم المخاطر (Risk Assessment)"
+    description: "تحديد وتقييم وتوثيق المخاطر السيبرانية على الأصول المكتشَفة بشكل دوري."
+    tags: [vulnerability, scanner]
+    max_severity: Medium
+  - control_id: NIST-PR.PS
+    title: "أمن المنصات (Platform Security)"
+    description: "تحديث الأنظمة والخدمات المكشوفة وإغلاق الإعدادات الافتراضية غير الآمنة."
+    tags: [configuration, vulnerability]
+    max_severity: High
+  - control_id: NIST-DE.CM
+    title: "المراقبة المستمرة (Continuous Monitoring)"
+    description: "مراقبة مستمرة لسطح الهجوم الخارجي لاكتشاف أصول أو ثغرات جديدة أولًا بأول."
+    tags: [scanner, asm]
+    max_severity: Medium
+  - control_id: NIST-RS.MA
+    title: "إدارة الحوادث (Incident Management)"
+    description: "وجود مسار موثّق لتصعيد ومعالجة الثغرات الحرجة المكتشَفة."
+    tags: [vulnerability]
+    max_severity: Critical

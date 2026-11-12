@@ -1,0 +1,1 @@
+create index if not exists idx_admin_api_keys_user_id on public.admin_api_keys (user_id); create index if not exists idx_finding_lifecycle_scan_id on public.finding_lifecycle (scan_id); create index if not exists idx_refresh_tokens_tenant_id on public.refresh_tokens (tenant_id); create index if not exists idx_refresh_tokens_user_id on public.refresh_tokens (user_id);

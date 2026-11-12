@@ -1,0 +1,17 @@
+begin;
+select plan(13);
+select ok(to_regclass('public.raw_artifacts') is not null, 'raw_artifacts exists');
+select ok(to_regclass('public.engine_results') is not null, 'engine_results exists');
+select ok(to_regclass('public.finding_sources') is not null, 'finding_sources exists');
+select ok(to_regclass('public.verification_events') is not null, 'verification_events exists');
+select ok(to_regclass('public.reparse_jobs') is not null, 'reparse_jobs exists');
+select ok(to_regclass('public.reparse_results') is not null, 'reparse_results exists');
+select ok(to_regclass('public.defectdojo_mappings') is not null, 'defectdojo_mappings exists');
+select ok(to_regclass('public.external_sync_jobs') is not null, 'external_sync_jobs exists');
+select ok((select relrowsecurity from pg_class where oid='public.raw_artifacts'::regclass), 'raw_artifacts has RLS enabled');
+select ok((select relforcerowsecurity from pg_class where oid='public.raw_artifacts'::regclass), 'raw_artifacts forces RLS');
+select ok(exists(select 1 from pg_policies where schemaname='public' and tablename='raw_artifacts' and policyname='tenant_isolation'), 'raw_artifacts has tenant isolation policy');
+select ok(exists(select 1 from pg_trigger where tgname='trg_raw_artifacts_immutable'), 'raw_artifacts immutable trigger exists');
+select ok(not exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='prevent_raw_artifact_mutation' and pg_get_functiondef(p.oid) ilike '%truncate%'), 'immutability function contains no destructive truncate');
+select * from finish();
+rollback;

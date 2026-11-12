@@ -1,0 +1,1 @@
+{"id":"docker-compose-exposed","name":"Exposed docker-compose.yml","severity":"Medium","path":"/docker-compose.yml","method":"GET","status":[200],"body_regex":["(?m)^services:\\s*$","(?m)^\\s*image:\\s*\\S+"],"tags":["exposure","config","docker"]}

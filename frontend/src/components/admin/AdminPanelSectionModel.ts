@@ -1,0 +1,66 @@
+import type { Dispatch, SetStateAction } from "react";
+import type {
+  AdminUser, AdminPolicies, AdminApiKey, AdminSession,
+  SecurityAlert, SecurityIncident, SecurityEvent,
+} from "../../api/client";
+import type { AdminStatItem } from "./AdminPanelChrome";
+
+export type AdminPanelSectionModel = {
+  ownerMode: boolean;
+  role: AdminUser["role"];
+  currentUserId: string | null;
+  busy: string | null;
+  targetTenantId?: string;
+  overviewStats: AdminStatItem[];
+  securityStats: AdminStatItem[];
+  health: Record<string, string>;
+  backup: { status: string; note: string } | null;
+  users: AdminUser[];
+  userFormOpen: boolean;
+  setUserFormOpen: Dispatch<SetStateAction<boolean>>;
+  newUserEmail: string;
+  setNewUserEmail: Dispatch<SetStateAction<string>>;
+  newUserPassword: string;
+  setNewUserPassword: Dispatch<SetStateAction<string>>;
+  createUser: () => Promise<void>;
+  change: (user: AdminUser, body: { role?: AdminUser["role"]; is_active?: boolean }) => Promise<void>;
+  removeUser: (user: AdminUser) => Promise<void>;
+  resetPassword: (user: AdminUser) => Promise<void>;
+  resetPasswordFor: string | null;
+  setResetPasswordFor: Dispatch<SetStateAction<string | null>>;
+  resetPasswordValue: string;
+  setResetPasswordValue: Dispatch<SetStateAction<string>>;
+  permissions: Record<string, string[]>;
+  asmTarget: string;
+  setAsmTarget: Dispatch<SetStateAction<string>>;
+  asmInterval: number;
+  setAsmInterval: Dispatch<SetStateAction<number>>;
+  asmSchedules: Array<Record<string, unknown>>;
+  createAsm: () => Promise<void>;
+  removeAsmSchedule: (schedule: Record<string, unknown>) => Promise<void>;
+  secSummary: { open_alerts: number; critical_alerts: number; open_incidents: number; events_24h: number } | null;
+  alerts: SecurityAlert[];
+  incidents: SecurityIncident[];
+  securityEvents: SecurityEvent[];
+  onUpdateAlert: (alertId: string) => Promise<void>;
+  onUpdateIncident: (incidentId: string) => Promise<void>;
+  policies: AdminPolicies | null;
+  policy: (kind: "security" | "scan" | "ai" | "notifications", values: Record<string, unknown>) => Promise<void>;
+  audit: Array<Record<string, unknown>>;
+  sessions: AdminSession[];
+  onRevokeAllSessions: () => Promise<void>;
+  onRevokeSession: (sessionId: string) => Promise<void>;
+  keys: AdminApiKey[];
+  keyFormOpen: boolean;
+  setKeyFormOpen: Dispatch<SetStateAction<boolean>>;
+  keyName: string;
+  setKeyName: Dispatch<SetStateAction<string>>;
+  keyExpiryDays: number;
+  setKeyExpiryDays: Dispatch<SetStateAction<number>>;
+  makeKey: () => Promise<void>;
+  onRevokeKey: (keyId: string) => Promise<void>;
+  features: Record<string, boolean>;
+  toggleFeature: (name: string) => Promise<void>;
+  scan: Record<string, unknown>;
+  loading: boolean;
+};

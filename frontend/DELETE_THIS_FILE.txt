@@ -1,0 +1,3 @@
+Delete this obsolete file from your project (replaced by Tailwind/shadcn in src/admin-ui):
+  frontend/src/components/AdminPanel.module.css
+After copying the files: cd frontend && npm install && npm run build

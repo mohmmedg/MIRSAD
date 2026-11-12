@@ -1,0 +1,1 @@
+{"id":"openapi-document","name":"OpenAPI/Swagger document exposed","severity":"Info","path":"/openapi.json","method":"GET","status":[200],"body_regex":["\\\"openapi\\\"\\s*:\\s*\\\"3\\.","\\\"swagger\\\"\\s*:\\s*\\\"2\\."] ,"tags":["api","discovery"]}

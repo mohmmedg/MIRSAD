@@ -1,0 +1,1 @@
+{"id":"wp-config-backup","name":"Exposed WordPress wp-config.php backup","severity":"Critical","path":"/wp-config.php.bak","method":"GET","status":[200],"body_regex":["DB_PASSWORD","DB_NAME","AUTH_KEY"],"tags":["exposure","config","wordpress"]}

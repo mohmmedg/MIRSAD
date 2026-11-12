@@ -1,0 +1,44 @@
+{
+  "pack_id": "builtin-api-core",
+  "version": "1.0.0",
+  "templates": [
+    {
+      "id": "api-unauthenticated-success",
+      "title": "API endpoint accessible without authentication",
+      "severity": "Medium",
+      "match": {
+        "status_in": [
+          200,
+          201,
+          202,
+          204
+        ],
+        "require_auth_header": true,
+        "security_declared": true
+      },
+      "remediation": "Require authentication and authorization for endpoints that expose protected data or actions."
+    },
+    {
+      "id": "api-server-banner",
+      "title": "API server technology disclosure",
+      "severity": "Low",
+      "match": {
+        "header_present": "server"
+      },
+      "remediation": "Minimize unnecessary server/version disclosure in HTTP response headers."
+    },
+    {
+      "id": "api-methods-advertised",
+      "title": "API advertises an undeclared HTTP method",
+      "severity": "Low",
+      "match": {
+        "status_in": [
+          405
+        ],
+        "allow_header_present": true,
+        "allow_has_undeclared_method": true
+      },
+      "remediation": "Review the Allow header and API contract; remove methods that are not intentionally exposed."
+    }
+  ]
+}

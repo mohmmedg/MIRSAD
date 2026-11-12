@@ -1,0 +1,201 @@
+.card {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-raised);
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--dur-fast) var(--ease-press), box-shadow var(--dur-fast) var(--ease-press);
+}
+
+.card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.spine {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.critical {
+  background: var(--sev-critical);
+}
+.high {
+  background: var(--sev-high);
+}
+.medium {
+  background: var(--sev-medium);
+}
+.low {
+  background: var(--sev-low);
+}
+.info {
+  background: var(--sev-info);
+}
+
+.body {
+  padding: 14px 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.iconBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.iconBadge.critical {
+  background: var(--sev-critical-dim);
+  color: var(--sev-critical);
+}
+.iconBadge.high {
+  background: var(--sev-high-dim);
+  color: var(--sev-high);
+}
+.iconBadge.medium {
+  background: var(--sev-medium-dim);
+  color: var(--sev-medium);
+}
+.iconBadge.low {
+  background: var(--sev-low-dim);
+  color: var(--sev-low);
+}
+.iconBadge.info {
+  background: var(--sev-info-dim);
+  color: var(--sev-info);
+}
+
+.titleGroup {
+  flex: 1;
+  min-width: 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.severityTag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.severityTag.critical {
+  color: var(--sev-critical);
+  background: var(--sev-critical-dim);
+}
+.severityTag.high {
+  color: var(--sev-high);
+  background: var(--sev-high-dim);
+}
+.severityTag.medium {
+  color: var(--sev-medium);
+  background: var(--sev-medium-dim);
+}
+.severityTag.low {
+  color: var(--sev-low);
+  background: var(--sev-low-dim);
+}
+.severityTag.info {
+  color: var(--sev-info);
+  background: var(--sev-info-dim);
+}
+
+.title {
+  font-weight: 600;
+  font-size: 14px;
+  font-family: var(--font-display);
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 5px;
+}
+
+.description {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.55;
+}
+
+.detailsToggle {
+  background: none;
+  border: none;
+  color: var(--accent-action);
+  font-size: 12px;
+  padding: 0;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.detailBlock {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.evidence {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg-void);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  color: var(--text-muted);
+  direction: ltr;
+  text-align: left;
+  word-break: break-word;
+}
+
+.remediation {
+  font-size: 13px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.remediation svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--accent-ok);
+}

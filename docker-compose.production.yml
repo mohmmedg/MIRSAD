@@ -1,0 +1,442 @@
+# All scanner and DefectDojo services are default services. No profiles are required.
+services:
+
+  # DefectDojo is a separate vulnerability-management service, analogous
+  # to the isolated ZAP daemon. Its own PostgreSQL/Valkey/media volumes keep
+  # DefectDojo data independent from MIRSAD's Supabase/Redis state.
+  defectdojo-nginx:
+    image: defectdojo/defectdojo-nginx:3.3.200
+    depends_on:
+      defectdojo-uwsgi:
+        condition: service_started
+    environment:
+      NGINX_METRICS_ENABLED: "false"
+      DD_UWSGI_HOST: "defectdojo-uwsgi"
+      DD_UWSGI_PORT: "3031"
+    volumes:
+      - defectdojo-media:/usr/share/nginx/html/media
+    ports:
+      - "127.0.0.1:${DEFECTDOJO_PORT:-8081}:8080"
+    restart: unless-stopped
+
+  defectdojo-uwsgi:
+    image: defectdojo/defectdojo-django:3.3.200
+    depends_on:
+      defectdojo-initializer:
+        condition: service_completed_successfully
+      postgres18:
+        condition: service_healthy
+      defectdojo-valkey:
+        condition: service_started
+    entrypoint: ["/wait-for-it.sh", "postgres18:5432", "-t", "30", "--", "/entrypoint-uwsgi.sh"]
+    environment:
+      DD_DEBUG: "False"
+      DD_ALLOWED_HOSTS: "${DEFECTDOJO_ALLOWED_HOSTS:-localhost,127.0.0.1,defectdojo-nginx}"
+      DD_SITE_URL: "${DEFECTDOJO_SITE_URL:-http://localhost:8081}"
+      DD_DATABASE_URL: "postgresql://defectdojo:${DEFECTDOJO_LOCAL_DB_PASSWORD:?Set DEFECTDOJO_LOCAL_DB_PASSWORD}@postgres18:5432/defectdojo"
+      DD_CELERY_BROKER_URL: "redis://defectdojo-valkey:6379/0"
+      DD_SECRET_KEY: "${DEFECTDOJO_DJANGO_SECRET_KEY:?Set DEFECTDOJO_DJANGO_SECRET_KEY}"
+      DD_CREDENTIAL_AES_256_KEY: "${DEFECTDOJO_CREDENTIAL_AES_256_KEY:?Set DEFECTDOJO_CREDENTIAL_AES_256_KEY}"
+      DD_DATABASE_READINESS_TIMEOUT: "30"
+      DD_HASHCODE_FIELDS_PER_SCANNER: '{"MIRSAD Scan (SARIF)": ["title", "cwe", "line", "file_path", "description"]}'
+    volumes:
+      - defectdojo-media:/app/media
+    restart: unless-stopped
+
+  defectdojo-celerybeat:
+    image: defectdojo/defectdojo-django:3.3.200
+    depends_on:
+      defectdojo-initializer:
+        condition: service_completed_successfully
+      postgres18:
+        condition: service_healthy
+      defectdojo-valkey:
+        condition: service_started
+    entrypoint: ["/wait-for-it.sh", "postgres18:5432", "-t", "30", "--", "/entrypoint-celery-beat.sh"]
+    environment:
+      DD_DATABASE_URL: "postgresql://defectdojo:${DEFECTDOJO_LOCAL_DB_PASSWORD:?Set DEFECTDOJO_LOCAL_DB_PASSWORD}@postgres18:5432/defectdojo"
+      DD_CELERY_BROKER_URL: "redis://defectdojo-valkey:6379/0"
+      DD_SECRET_KEY: "${DEFECTDOJO_DJANGO_SECRET_KEY:?Set DEFECTDOJO_DJANGO_SECRET_KEY}"
+      DD_CREDENTIAL_AES_256_KEY: "${DEFECTDOJO_CREDENTIAL_AES_256_KEY:?Set DEFECTDOJO_CREDENTIAL_AES_256_KEY}"
+      DD_DATABASE_READINESS_TIMEOUT: "30"
+    restart: unless-stopped
+
+  defectdojo-celeryworker:
+    image: defectdojo/defectdojo-django:3.3.200
+    depends_on:
+      defectdojo-initializer:
+        condition: service_completed_successfully
+      postgres18:
+        condition: service_healthy
+      defectdojo-valkey:
+        condition: service_started
+    entrypoint: ["/wait-for-it.sh", "postgres18:5432", "-t", "30", "--", "/entrypoint-celery-worker.sh"]
+    environment:
+      DD_DATABASE_URL: "postgresql://defectdojo:${DEFECTDOJO_LOCAL_DB_PASSWORD:?Set DEFECTDOJO_LOCAL_DB_PASSWORD}@postgres18:5432/defectdojo"
+      DD_CELERY_BROKER_URL: "redis://defectdojo-valkey:6379/0"
+      DD_SECRET_KEY: "${DEFECTDOJO_DJANGO_SECRET_KEY:?Set DEFECTDOJO_DJANGO_SECRET_KEY}"
+      DD_CREDENTIAL_AES_256_KEY: "${DEFECTDOJO_CREDENTIAL_AES_256_KEY:?Set DEFECTDOJO_CREDENTIAL_AES_256_KEY}"
+      DD_DATABASE_READINESS_TIMEOUT: "30"
+      DD_HASHCODE_FIELDS_PER_SCANNER: '{"MIRSAD Scan (SARIF)": ["title", "cwe", "line", "file_path", "description"]}'
+    volumes:
+      - defectdojo-media:/app/media
+    restart: unless-stopped
+
+  defectdojo-initializer:
+    image: defectdojo/defectdojo-django:3.3.200
+    depends_on:
+      postgres18:
+        condition: service_healthy
+    entrypoint: ["/wait-for-it.sh", "postgres18:5432", "--", "/entrypoint-initializer.sh"]
+    environment:
+      DD_DATABASE_URL: "postgresql://defectdojo:${DEFECTDOJO_LOCAL_DB_PASSWORD:?Set DEFECTDOJO_LOCAL_DB_PASSWORD}@postgres18:5432/defectdojo"
+      DD_ADMIN_USER: "${DEFECTDOJO_ADMIN_USER:-admin}"
+      DD_ADMIN_MAIL: "${DEFECTDOJO_ADMIN_MAIL:-admin@defectdojo.local}"
+      DD_ADMIN_FIRST_NAME: "MIRSAD"
+      DD_ADMIN_LAST_NAME: "Admin"
+      DD_ADMIN_PASSWORD: "${DEFECTDOJO_LOCAL_ADMIN_PASSWORD:?Set DEFECTDOJO_LOCAL_ADMIN_PASSWORD}"
+      DD_INITIALIZE: "${DEFECTDOJO_INITIALIZE:-true}"
+      DD_SECRET_KEY: "${DEFECTDOJO_DJANGO_SECRET_KEY:?Set DEFECTDOJO_DJANGO_SECRET_KEY}"
+      DD_CREDENTIAL_AES_256_KEY: "${DEFECTDOJO_CREDENTIAL_AES_256_KEY:?Set DEFECTDOJO_CREDENTIAL_AES_256_KEY}"
+      DD_DATABASE_READINESS_TIMEOUT: "30"
+    restart: "no"
+
+  postgres18:
+    image: postgres:18.4-alpine
+    environment:
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_DB: defectdojo
+      POSTGRES_USER: defectdojo
+      POSTGRES_PASSWORD: "${DEFECTDOJO_LOCAL_DB_PASSWORD:?Set DEFECTDOJO_LOCAL_DB_PASSWORD}"
+    volumes:
+      - postgres18:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U defectdojo -d defectdojo"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    restart: unless-stopped
+
+  defectdojo-valkey:
+    image: valkey/valkey:9.1.0-alpine
+    volumes:
+      - defectdojo-valkey:/data
+    restart: unless-stopped
+
+  # One-shot: creates a random ZAP API key in a named volume the first time the
+  # stack starts (no .env edit needed). ZAP reads it via start-zap.sh; backend and
+  # worker read it through ZAP_API_KEY_FILE. Existing keys are never overwritten.
+  zap-key-init:
+    image: docker:cli
+    volumes:
+      - zap-secrets:/s
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -eu
+        if [ ! -s /s/zap_api_key ]; then
+          umask 022
+          head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > /s/zap_api_key
+          echo "[zap-key-init] generated a new ZAP API key"
+        fi
+        chmod 644 /s/zap_api_key
+    restart: "no"
+
+  # OWASP ZAP daemon. It is isolated from the application container and starts
+  # by default because ENABLE_ZAP=true in the production scanner configuration.
+  zap:
+    build:
+      context: ./zap
+      dockerfile: Dockerfile
+    image: mirsad-zap:2.17.0-pinned
+    # Headless browser (AJAX spider / DOM XSS) crashes with Docker's default 64MB /dev/shm
+    # (log: "failed to start or connect to the browser").
+    shm_size: "1gb"
+    # Local browser access: ZAP remains reachable internally as http://zap:8080.
+    # This host mapping exposes it only on the local machine.
+    ports:
+      - "127.0.0.1:8082:8080"
+    command:
+      - start-zap.sh
+      - -Xmx${ZAP_HEAP:-3g}
+      - -daemon
+      - -host
+      - 0.0.0.0
+      - -port
+      - "8080"
+      - -config
+      - 'api.addrs.addr.name=(zap(:8080)?|127\..*|10\..*|172\.(1[6-9]|2[0-9]|3[01])\..*|192\.168\..*)'
+      - -config
+      - api.addrs.addr.regex=true
+      # Do not download ZAP add-ons at runtime. The pinned ZAP image already
+      # contains its bundled add-ons; upgrades must happen by changing/rebuilding
+      # the image during the build/release process.
+      - -config
+      - autoupdate.autodownload=false
+    security_opt:
+      - "no-new-privileges:true"
+    read_only: true
+    # See docker-compose.yml for why this covers the whole /home/zap dir
+    # (not just .ZAP) — the client/HUD add-on and Java Preferences API also
+    # need write access under /home/zap.
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 536870912   # 512m
+      - type: tmpfs
+        target: /home/zap
+        tmpfs:
+          size: 402653184   # 384m — .ZAP + .mozilla profile + .java prefs
+          mode: 0o1777      # rwxrwxrwt — writable by the zap user regardless of its uid
+      - zap-secrets:/zap-secrets:ro
+    depends_on:
+      zap-key-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+
+  redis:
+    image: redis:8-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1000", "--requirepass", '${REDIS_PASSWORD:?Set REDIS_PASSWORD}']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", 'redis-cli -a "$${REDIS_PASSWORD}" ping | grep PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        TRIVY_DB_REQUIRED: ${TRIVY_DB_REQUIRED:-false}
+    env_file:
+      - ./backend/.env.production
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL (Supabase PostgreSQL)}
+      SCHEDULER_DATABASE_URL: ${SCHEDULER_DATABASE_URL:?Set SCHEDULER_DATABASE_URL (Supabase PostgreSQL)}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?Set REDIS_PASSWORD}@redis:6379/0
+      ENABLE_NUCLEI: ${ENABLE_NUCLEI:-true}
+      EXTERNAL_ENGINE_PARALLELISM: ${EXTERNAL_ENGINE_PARALLELISM:-2}
+      ENABLE_ZAP: ${ENABLE_ZAP:-true}
+      ENABLE_SQLMAP: ${ENABLE_SQLMAP:-true}
+      ENABLE_GHAURI: ${ENABLE_GHAURI:-true}
+      ENABLE_FFUF: ${ENABLE_FFUF:-true}
+      ENABLE_TESTSSL: ${ENABLE_TESTSSL:-true}
+      ENABLE_SUBFINDER: ${ENABLE_SUBFINDER:-true}
+      ENABLE_HTTPX_PROBE: ${ENABLE_HTTPX_PROBE:-true}
+      ENABLE_TRIVY: ${ENABLE_TRIVY:-true}
+      TRIVY_DB_REQUIRED: ${TRIVY_DB_REQUIRED:-false}
+      ENABLE_SEMGREP: ${ENABLE_SEMGREP:-true}
+      ENABLE_GITLEAKS: ${ENABLE_GITLEAKS:-true}
+      ENABLE_TRUFFLEHOG: ${ENABLE_TRUFFLEHOG:-true}
+      ENABLE_SOURCE_INTELLIGENCE: ${ENABLE_SOURCE_INTELLIGENCE:-true}
+      ENABLE_SOURCE_MAP_ANALYSIS: ${ENABLE_SOURCE_MAP_ANALYSIS:-true}
+      ENABLE_PLAYWRIGHT: ${ENABLE_PLAYWRIGHT:-true}
+      ENABLE_ADVANCED_SECURITY: ${ENABLE_ADVANCED_SECURITY:-true}
+      ZAP_SERVICE_URL: ${ZAP_SERVICE_URL:-http://zap:8080}
+      ZAP_API_KEY_FILE: /zap-secrets/zap_api_key
+      DEFECTDOJO_ENABLED: ${DEFECTDOJO_ENABLED:-true}
+      DEFECTDOJO_URL: ${DEFECTDOJO_URL:-http://defectdojo-nginx:8080}
+      DEFECTDOJO_API_URL: ${DEFECTDOJO_API_URL:-http://defectdojo-nginx:8080}
+      DEFECTDOJO_API_TOKEN: ${DEFECTDOJO_API_TOKEN:-}
+      DEFECTDOJO_ENABLED: ${DEFECTDOJO_ENABLED:-true}
+      DEFECTDOJO_URL: ${DEFECTDOJO_URL:-http://defectdojo-nginx:8080}
+      DEFECTDOJO_API_URL: ${DEFECTDOJO_API_URL:-http://defectdojo-nginx:8080}
+      DEFECTDOJO_API_TOKEN: ${DEFECTDOJO_API_TOKEN:-}
+      JOB_QUEUE_ENABLED: "true"
+      WORKER_MODE: "false"
+      ENFORCE_TARGET_SCOPE: ${ENFORCE_TARGET_SCOPE:-true}
+      ALLOWED_TARGETS: ${ALLOWED_TARGETS:?Set ALLOWED_TARGETS explicitly for production target scope}
+    expose: ["8000"]
+    depends_on:
+      zap-key-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      defectdojo-nginx:
+        condition: service_started
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    # nmap needs raw sockets (-sS/-sU/-O). The image gives the nmap binary
+    # cap_net_raw/cap_net_admin via setcap; no-new-privileges would ignore
+    # those file capabilities, so it is intentionally not set here.
+    volumes:
+      - scanner-data:/app/data
+      - zap-secrets:/zap-secrets:ro
+
+    # IMPORTANT:
+    # Use asyncio + h11 because the default Uvicorn HTTP stack
+    # was accepting TCP connections but not completing HTTP requests
+    # in this production container.
+    #
+    # --workers 4: several routes (see app/api/routes/admin.py in
+    # particular) still call session_scope()/with_db_retry() directly on
+    # the event loop rather than through app.core.database.run_db (2026-09-16
+    # fix, applied so far to platform.py's data-loading endpoints only).
+    # A single worker means one such blocking DB call freezes every other
+    # concurrent request on the whole process; 4 worker processes bound the
+    # blast radius to 1/4 of traffic instead of all of it. This is a stopgap,
+    # not a fix — the real fix is finishing the run_db migration for the
+    # remaining routes (admin.py, auth.py, compliance.py, continuous.py, jobs.py).
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--loop",
+        "asyncio",
+        "--http",
+        "h11",
+        "--workers",
+        "4"
+      ]
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readiness', timeout=5)"
+        ]
+      interval: 15s
+      timeout: 10s
+      start_period: 30s
+      retries: 8
+
+    restart: unless-stopped
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        TRIVY_DB_REQUIRED: ${TRIVY_DB_REQUIRED:-false}
+    env_file:
+      - ./backend/.env.production
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL (Supabase PostgreSQL)}
+      SCHEDULER_DATABASE_URL: ${SCHEDULER_DATABASE_URL:?Set SCHEDULER_DATABASE_URL (Supabase PostgreSQL)}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?Set REDIS_PASSWORD}@redis:6379/0
+      JOB_QUEUE_ENABLED: "true"
+      ENABLE_NUCLEI: ${ENABLE_NUCLEI:-true}
+      EXTERNAL_ENGINE_PARALLELISM: ${EXTERNAL_ENGINE_PARALLELISM:-2}
+      ENABLE_ZAP: ${ENABLE_ZAP:-true}
+      ENABLE_SQLMAP: ${ENABLE_SQLMAP:-true}
+      ENABLE_GHAURI: ${ENABLE_GHAURI:-true}
+      ENABLE_FFUF: ${ENABLE_FFUF:-true}
+      ENABLE_TESTSSL: ${ENABLE_TESTSSL:-true}
+      ENABLE_SUBFINDER: ${ENABLE_SUBFINDER:-true}
+      ENABLE_HTTPX_PROBE: ${ENABLE_HTTPX_PROBE:-true}
+      ENABLE_TRIVY: ${ENABLE_TRIVY:-true}
+      TRIVY_DB_REQUIRED: ${TRIVY_DB_REQUIRED:-false}
+      ENABLE_SOURCE_INTELLIGENCE: ${ENABLE_SOURCE_INTELLIGENCE:-true}
+      ENABLE_SOURCE_MAP_ANALYSIS: ${ENABLE_SOURCE_MAP_ANALYSIS:-true}
+      ENABLE_PLAYWRIGHT: ${ENABLE_PLAYWRIGHT:-true}
+      ENABLE_ADVANCED_SECURITY: ${ENABLE_ADVANCED_SECURITY:-true}
+      # semgrep/gitleaks/trufflehog binaries are now baked into the backend/worker
+      # image (see backend/Dockerfile). They are enabled by default here because
+      # they only run on "deep"/"maximum" web-scan profiles and add real scan time;
+      # flip to "true" once you are ready to pay that cost. Missing binaries were
+      # already handled gracefully (NOT_INSTALLED) before this change — this only
+      # changes whether the binaries exist to be found.
+      ENABLE_SEMGREP: ${ENABLE_SEMGREP:-true}
+      ENABLE_GITLEAKS: ${ENABLE_GITLEAKS:-true}
+      ENABLE_TRUFFLEHOG: ${ENABLE_TRUFFLEHOG:-true}
+      SOURCE_TOOL_TIMEOUT_SECONDS: ${SOURCE_TOOL_TIMEOUT_SECONDS:-7200}
+      SOURCE_INTELLIGENCE_MAX_SOURCE_SIZE: ${SOURCE_INTELLIGENCE_MAX_SOURCE_SIZE:-5000000}
+      SOURCE_INTELLIGENCE_MAX_JS_ASSETS: ${SOURCE_INTELLIGENCE_MAX_JS_ASSETS:-500}
+      SOURCE_INTELLIGENCE_MAX_SOURCE_MAPS: ${SOURCE_INTELLIGENCE_MAX_SOURCE_MAPS:-100}
+      SOURCE_INTELLIGENCE_MAX_MAP_SIZE: ${SOURCE_INTELLIGENCE_MAX_MAP_SIZE:-10000000}
+      NUCLEI_ALLOWED_TAGS: ${NUCLEI_ALLOWED_TAGS:-cve,misconfig,exposure,config,ssl,headers,technologies,default-login,panel,unauth,token,file,xss,sqli,lfi,rce,ssrf,redirect,takeover,wordpress,wp-plugin,dast,fuzz}
+      ZAP_SERVICE_URL: ${ZAP_SERVICE_URL:-http://zap:8080}
+      ZAP_API_KEY_FILE: /zap-secrets/zap_api_key
+      WORKER_MODE: "true"
+      WORKER_MAX_CONCURRENT_JOBS: ${WORKER_MAX_CONCURRENT_JOBS:-2}
+      TRIVY_DB_BOOTSTRAP_RETRIES: ${TRIVY_DB_BOOTSTRAP_RETRIES:-0}
+      ENFORCE_TARGET_SCOPE: ${ENFORCE_TARGET_SCOPE:-true}
+      ALLOWED_TARGETS: ${ALLOWED_TARGETS:?Set ALLOWED_TARGETS explicitly for production target scope}
+    depends_on:
+      zap-key-init:
+        condition: service_completed_successfully
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      defectdojo-nginx:
+        condition: service_started
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    # nmap needs raw sockets (-sS/-sU/-O). The image gives the nmap binary
+    # cap_net_raw/cap_net_admin via setcap; no-new-privileges would ignore
+    # those file capabilities, so it is intentionally not set here.
+    volumes:
+      - scanner-data:/app/data
+      - zap-secrets:/zap-secrets:ro
+    # 2026-09-22 (توزيع ذكي / تسريع الفحوصات المتزامنة):
+    # لتشغيل عدة فحوصات بالتوازي فعلياً، شغّل عدة نسخ من هذا الـ service:
+    #   docker compose -f docker-compose.production.yml up -d --scale worker=3
+    # هذا آمن الآن لأن:
+    #   1) MAX_CONCURRENT_ENGINES أصبح سقف موزّع عبر Redis (core/
+    #      distributed_semaphore.py) — يبقى صحيح عالمياً مهما زاد عدد
+    #      النسخ، بدل ما يتضاعف بعددها.
+    #   2) MAX_CONCURRENT_ENGINES_PER_TARGET يمنع تراكم الضغط على نفس
+    #      الموقع المفحوص حتى لو أكثر من job استهدفه بنفس اللحظة.
+    #   3) لازم ترفع EXPECTED_APP_PROCESSES (backend.core.config) بنفس
+    #      عدد نسخ worker المضافة، وإلا effective_db_pool_size ينزل تلقائياً
+    #      ليبقى آمن على حد اتصالات Supabase (SUPABASE_MAX_CONNECTIONS)
+    #      — راجع core/config.py للتفاصيل والحسبة.
+    command: ["python", "-m", "app.worker"]
+    healthcheck:
+      # No HTTP endpoint to poll; the worker touches /tmp/worker_heartbeat on
+      # every loop iteration (see app/worker.py). A stale mtime means the
+      # process is hung/deadlocked even though the container is still up.
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import sys,time,os; p='/tmp/worker_heartbeat'; sys.exit(0 if os.path.exists(p) and time.time()-os.path.getmtime(p)<60 else 1)"
+        ]
+      interval: 15s
+      timeout: 10s
+      start_period: 30s
+      retries: 8
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_BASE_URL: ""
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?Set VITE_SUPABASE_URL}
+        SUPABASE_PUBLIC_KEY: ${VITE_SUPABASE_ANON_KEY:?Set VITE_SUPABASE_ANON_KEY}
+        VITE_ENABLE_LOCAL_FIRST: ${VITE_ENABLE_LOCAL_FIRST:-true}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
+
+volumes:
+  zap-secrets:
+  redis-data:
+  scanner-data:
+  postgres18:
+  defectdojo-media:
+  defectdojo-valkey:

@@ -1,0 +1,12 @@
+framework: "CIS Controls"
+controls:
+  - control_id: CIS-4.1
+    title: Secure configuration
+    description: Secure configurations are established and maintained.
+    tags: [configuration, headers]
+    max_severity: Medium
+  - control_id: CIS-7.1
+    title: Continuous vulnerability management
+    description: Vulnerabilities are continuously identified and managed.
+    tags: [scanner, vulnerability, asm]
+    max_severity: High

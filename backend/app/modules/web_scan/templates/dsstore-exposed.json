@@ -1,0 +1,1 @@
+{"id":"dsstore-exposed","name":"Exposed .DS_Store file","severity":"Low","path":"/.DS_Store","method":"GET","status":[200],"body_regex":["Bud1"],"tags":["exposure","metadata"]}

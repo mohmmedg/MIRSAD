@@ -1,0 +1,1 @@
+{"id":"ssh-private-key-exposed","name":"Exposed SSH private key","severity":"Critical","path":"/id_rsa","method":"GET","status":[200],"body_regex":["-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----"],"tags":["exposure","credentials","ssh"]}

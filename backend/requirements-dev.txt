@@ -1,0 +1,10 @@
+# أدوات التطوير والاختبار — لا تُثبَّت بالإنتاج، فقط بالـ CI والتطوير المحلي
+pytest==8.3.4
+pytest-asyncio==0.25.0
+pytest-cov==6.0.0
+ruff==0.8.4
+mypy==1.13.0
+pip-audit==2.7.3
+# 2026-09-16: local/test SQLite falls back to this async driver now that
+# session_scope() (app/core/database.py) is async everywhere.
+aiosqlite==0.22.1

@@ -1,0 +1,1 @@
+{"id":"npm-debug-log-exposed","name":"Exposed npm-debug.log (can leak internal paths/package info)","severity":"Low","path":"/npm-debug.log","method":"GET","status":[200],"body_regex":["(?im)^\\d+ (?:info|verbose|error) "],"tags":["exposure","debug-log"]}

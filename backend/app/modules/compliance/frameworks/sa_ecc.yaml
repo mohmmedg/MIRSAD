@@ -1,0 +1,46 @@
+# Saudi NCA Essential Cybersecurity Controls (ECC-1:2018) - only the subdomains an external
+# scanner can provide evidence for (asset management, access control, vulnerability management,
+# penetration testing, web application security, third-party exposure).
+# Governance, awareness and physical-security domains are out of scope for this engine and are
+# intentionally not modeled here.
+#
+# 2026-10-17: control IDs were corrected to the official ECC-1:2018 clause numbering
+# (checked against https://opensecurityarchitecture.org/frameworks/nca-ecc):
+#   2-1 Asset Management                    2-2 Identity and Access Management
+#   2-10 Vulnerability Management           2-11 Penetration Testing
+#   2-14 Web Application Security           4-1 Third-Party Cybersecurity
+# The previous file kept two conflicting sets, and several IDs pointed at the wrong clause
+# (e.g. ECC-2-3 / ECC-2-9 for vulnerability / application security, ECC-2-13 for pen testing).
+# Re-verify against the official NCA document before using a report as formal evidence.
+framework: "SA ECC"
+controls:
+  - control_id: ECC-2-1
+    title: "Asset Management (إدارة الأصول)"
+    description: "Information and technology assets are identified, classified and inventoried (حصر الأصول التقنية المكشوفة وتصنيفها)."
+    tags: [asset, network, dns]
+    max_severity: Medium
+  - control_id: ECC-2-2
+    title: "Identity and Access Management (إدارة هويات الدخول والصلاحيات)"
+    description: "Access to systems and applications is authenticated and authorized (التحقق من الهوية والتفويض)."
+    tags: [auth, authorization]
+    max_severity: High
+  - control_id: ECC-2-10
+    title: "Vulnerability Management (إدارة الثغرات)"
+    description: "Vulnerabilities in externally-facing systems are identified and remediated continuously (اكتشاف ومعالجة الثغرات في الأصول العامة)."
+    tags: [scanner, vulnerability, asm]
+    max_severity: High
+  - control_id: ECC-2-11
+    title: "Penetration Testing (اختبار الاختراق)"
+    description: "Periodic penetration tests are performed on the externally exposed scope (اختبارات اختراق دورية على النطاق المكشوف)."
+    tags: [injection, exploit]
+    max_severity: High
+  - control_id: ECC-2-14
+    title: "Web Application Security (أمن تطبيقات الويب)"
+    description: "Web and API applications are protected against common attack techniques (حماية تطبيقات الويب والـAPI من الثغرات الشائعة)."
+    tags: [web, api, configuration]
+    max_severity: High
+  - control_id: ECC-4-1
+    title: "Third-Party Cybersecurity (الأمن السيبراني المتعلق بالأطراف الخارجية)"
+    description: "Risk of assets hosted by external providers (cloud, CDN, ...) is assessed (تقييم مخاطر الأصول المستضافة لدى مزودين خارجيين)."
+    tags: [exposure, network]
+    max_severity: Medium

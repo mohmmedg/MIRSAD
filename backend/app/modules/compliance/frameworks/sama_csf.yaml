@@ -1,0 +1,50 @@
+# Saudi Central Bank (SAMA) Cyber Security Framework - subset relevant to
+# externally observable attack surface (threat & vulnerability management,
+# access management, infrastructure security). Not a substitute for the full
+# self-assessment questionnaire, which also covers governance and third-party
+# risk this platform does not evaluate.
+framework: "SAMA CSF"
+controls:
+  - control_id: SAMA-3.3.5-EN
+    title: Threat and vulnerability management
+    description: The organization proactively identifies and remediates vulnerabilities in internet-facing systems.
+    tags: [scanner, vulnerability, asm]
+    max_severity: High
+  - control_id: SAMA-3.3.6
+    title: Access control
+    description: Access to information assets is restricted and authenticated appropriately.
+    tags: [auth, authorization]
+    max_severity: High
+  - control_id: SAMA-3.3.9-EN
+    title: Infrastructure security
+    description: Network and infrastructure configurations minimize unnecessary exposure.
+    tags: [network, configuration, exposure]
+    max_severity: High
+  # Additional controls merged from mirsad-patch-v3.zip (Arabic-language,
+  # real SAMA CSF section numbers). SAMA-3.3.5 in the patch is the same
+  # practical control as SAMA-3.3.5-EN above (vulnerability management) -
+  # kept as a separate bilingual entry rather than merged text, since the
+  # loader has no multi-language field; SAMA-3.3.9 in the patch is a
+  # DIFFERENT topic (web/mobile app security) from SAMA-3.3.9-EN above
+  # (infrastructure security) despite sharing a section number with it -
+  # the -EN suffix avoids silently overwriting one with the other.
+  - control_id: SAMA-3.3.5
+    title: "إدارة الثغرات الأمنية"
+    description: "فحص دوري للثغرات على الأصول العامة ومعالجتها وفق مستوى الخطورة والحساسية."
+    tags: [scanner, vulnerability]
+    max_severity: High
+  - control_id: SAMA-3.3.7
+    title: "اختبار الاختراق"
+    description: "اختبار اختراق سنوي على الأقل لكل الأصول المكشوفة على الإنترنت."
+    tags: [auth, authorization]
+    max_severity: High
+  - control_id: SAMA-3.3.9
+    title: "أمن تطبيقات الويب والموبايل"
+    description: "مراجعة أمنية دورية لتطبيقات العملاء المكشوفة خارجيًا."
+    tags: [web, injection, xss]
+    max_severity: High
+  - control_id: SAMA-3.3.12
+    title: "إدارة الأصول السيبرانية"
+    description: "جرد دقيق ومحدَّث للأصول المرتبطة بالإنترنت التابعة للجهة."
+    tags: [asset, network]
+    max_severity: Medium

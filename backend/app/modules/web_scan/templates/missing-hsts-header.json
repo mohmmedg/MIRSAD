@@ -1,0 +1,1 @@
+{"id": "missing-hsts-header", "name": "Missing Strict-Transport-Security Header", "path": "/", "method": "GET", "severity": "Low", "tags": ["misconfig", "headers"], "headers": {"Strict-Transport-Security": {"absent": true}}}

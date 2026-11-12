@@ -1,0 +1,1 @@
+{"id":"phpinfo-exposed","name":"Exposed phpinfo() page","severity":"Medium","path":"/phpinfo.php","method":"GET","status":[200],"body_regex":["(?i)<title>phpinfo\\(\\)</title>","(?i)PHP Version\\s*</td>"],"tags":["exposure","config","php"]}

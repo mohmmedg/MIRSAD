@@ -1,0 +1,1 @@
+{"id":"phpmyadmin-exposed","name":"Exposed phpMyAdmin panel","severity":"Medium","path":"/phpmyadmin/","method":"GET","status":[200],"body_regex":["(?i)phpMyAdmin"],"tags":["exposure","admin-panel","database"]}

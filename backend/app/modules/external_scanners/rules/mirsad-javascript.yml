@@ -1,0 +1,26 @@
+rules:
+  - id: mirsad.javascript.eval
+    languages: [javascript, typescript]
+    message: "Dynamic code execution via eval() requires data-flow review."
+    severity: WARNING
+    pattern: eval(...)
+  - id: mirsad.javascript.function-constructor
+    languages: [javascript, typescript]
+    message: "Function constructor enables dynamic code execution."
+    severity: WARNING
+    pattern: new Function(...)
+  - id: mirsad.javascript.innerhtml
+    languages: [javascript, typescript]
+    message: "innerHTML assignment is a potential DOM XSS sink; validate the source."
+    severity: WARNING
+    pattern: $X.innerHTML = $Y
+  - id: mirsad.javascript.document-write
+    languages: [javascript, typescript]
+    message: "document.write is a dangerous DOM sink."
+    severity: WARNING
+    pattern: document.write(...)
+  - id: mirsad.javascript.open-redirect-location
+    languages: [javascript, typescript]
+    message: "Assignment to window.location may enable open redirect if input is attacker controlled."
+    severity: WARNING
+    pattern: window.location = $X

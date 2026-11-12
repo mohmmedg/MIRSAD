@@ -1,0 +1,1 @@
+{"id":"spring-actuator-heapdump","name":"Exposed Spring Boot Actuator heapdump","severity":"Critical","path":"/actuator/heapdump","method":"GET","status":[200],"headers":{"Content-Type":{"contains":"octet-stream"}},"tags":["exposure","memory-dump","spring"]}

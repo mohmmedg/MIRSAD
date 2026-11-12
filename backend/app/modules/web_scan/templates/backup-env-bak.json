@@ -1,0 +1,1 @@
+{"id":"backup-env-bak","name":"Exposed .env backup file","severity":"High","path":"/.env.bak","method":"GET","status":[200],"body_regex":["(?m)^(?:APP_|DB_|API_|SECRET_|AWS_|DATABASE_)\\w*\\s*="],"tags":["exposure","config","backup"]}

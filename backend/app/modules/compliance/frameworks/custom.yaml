@@ -1,0 +1,7 @@
+framework: "Custom"
+controls:
+  - control_id: CUSTOM-SCOPE-1
+    title: Target scope enforcement
+    description: Security testing is restricted to explicitly authorized targets.
+    tags: [scope]
+    max_severity: High

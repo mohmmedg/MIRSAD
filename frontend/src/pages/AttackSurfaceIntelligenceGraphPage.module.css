@@ -1,0 +1,75 @@
+.wrap{height:calc(100vh - 130px);min-height:760px;display:flex;flex-direction:column;gap:14px;transition:background .2s ease}
+.header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;flex-wrap:wrap}
+.kicker{font:600 11px var(--font-mono);color:var(--accent-action);letter-spacing:.1em}
+.title{margin:5px 0;font:700 28px var(--font-display)}
+.sub{margin:0;color:var(--text-muted)}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.button,.select,.search{height:38px;border:1px solid var(--line);border-radius:9px;background:var(--bg-panel);padding:0 12px;transition:background .15s ease,border-color .15s ease,transform .1s ease}
+.button{display:inline-flex;align-items:center;gap:6px;font-weight:650;cursor:pointer}
+.button:hover{background:var(--bg-panel-hover);border-color:var(--line-strong)}
+.button:active{transform:scale(.97)}
+.expandButton{background:var(--accent-action-dim,var(--bg-panel-raised));border-color:var(--accent-action)}
+.search{min-width:280px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;flex:1;min-height:0}
+.canvas{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius-lg);background:
+  radial-gradient(var(--line) 1px, transparent 1px) 0 0/26px 26px,
+  var(--bg-panel);
+  box-shadow:var(--shadow-md);min-height:720px}
+.svg{width:100%;height:100%;display:block;touch-action:none;user-select:none}
+.edge{stroke:var(--line-strong);stroke-width:1.5;opacity:.48;vector-effect:non-scaling-stroke}
+.edgeLabel{fill:var(--text-faint);font:9px var(--font-mono)}
+.node{cursor:grab;transition:opacity .15s ease,transform .12s ease}
+.node:active{cursor:grabbing}
+.node:hover .nodeCircle{filter:drop-shadow(0 0 8px var(--line-glow))}
+.nodeCircle{stroke:var(--bg-void);stroke-width:2.5;transition:r .12s ease}
+.nodeText{fill:var(--text-primary);font:650 11.5px var(--font-body);pointer-events:none}
+.nodeSub{fill:var(--text-faint);font:8px var(--font-mono);pointer-events:none;letter-spacing:.06em}
+.selected .nodeCircle{stroke:var(--accent-action);stroke-width:3.5;filter:drop-shadow(0 0 10px var(--line-glow))}
+.dim{opacity:.13}
+.panel{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--bg-panel);padding:16px;overflow:auto;box-shadow:var(--shadow-md)}
+.panelTitle{font:700 14px var(--font-display);margin-bottom:11px}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.legendItem{display:flex;align-items:center;gap:9px;padding:5px 0;color:var(--text-muted);font-size:11px}
+.dot{width:9px;height:9px;border-radius:50%}
+.details{font-size:11px;color:var(--text-muted)}
+.details pre{white-space:pre-wrap;word-break:break-word;background:var(--bg-void);padding:11px;border-radius:9px;max-height:450px;overflow:auto;font:10px/1.55 var(--font-mono)}
+.statGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat{padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--bg-panel-raised)}
+.stat span{display:block;color:var(--text-faint);font-size:10px}
+.stat b{font-size:17px}
+.hint{color:var(--text-faint);font-size:10px;line-height:1.6}
+.error{padding:10px;border:1px solid var(--sev-high);color:var(--sev-high);background:var(--sev-high-dim);border-radius:8px}
+.controls{position:absolute;left:14px;bottom:14px;display:flex;gap:6px}
+.zoom{width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--glass-bg);font-weight:800;backdrop-filter:blur(6px);cursor:pointer;transition:background .15s ease}
+.zoom:hover{background:var(--bg-panel-hover)}
+
+/* Fullscreen = the graph becomes its own dedicated page-within-a-page:
+   a fixed overlay covering the entire viewport (over the sidebar/topbar),
+   generous padding, and the same layout scaled up to fill all that extra
+   room. Esc or the toolbar button exits it. */
+.fullscreen{
+  position:fixed;inset:0;z-index:500;
+  height:100vh;min-height:0;
+  padding:18px 22px;
+  background:var(--bg-void);
+  animation:fsIn .18s ease;
+}
+@keyframes fsIn{from{opacity:0;transform:scale(.99)}to{opacity:1;transform:scale(1)}}
+.fullscreen .canvas{min-height:0}
+.fullscreen .layout{grid-template-columns:minmax(0,1fr) 390px;gap:24px}
+
+@media(max-width:1050px){
+  .layout{grid-template-columns:1fr}
+  .panel{max-height:320px}
+  .wrap{height:auto;min-height:960px}
+  .canvas{height:680px}
+  .fullscreen{padding:12px;overflow:auto}
+  .fullscreen .canvas{height:70vh}
+}
+@media(max-width:650px){.search{min-width:150px}.header{flex-direction:column}}
+
+.emptyGraph{flex:1;min-height:560px;display:grid;place-items:center;align-content:center;gap:10px;padding:48px;text-align:center;border:1px dashed var(--line-strong);border-radius:var(--radius-lg);background:var(--bg-panel)}
+.emptyIcon{width:64px;height:64px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--bg-panel-raised);color:var(--accent-action)}
+.emptyGraph h2{margin:4px 0;font:700 20px var(--font-display)}
+.emptyGraph p{max-width:560px;margin:0;color:var(--text-muted);line-height:1.8;font-size:12px}
+.emptyGraph .button{margin-top:8px}

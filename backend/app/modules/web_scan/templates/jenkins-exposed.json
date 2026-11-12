@@ -1,0 +1,1 @@
+{"id":"jenkins-exposed","name":"Jenkins CI server detected on root path","severity":"Medium","path":"/","method":"GET","status":[200,403],"headers":{"X-Jenkins":{"exists":true}},"tags":["exposure","fingerprint","ci-cd"]}

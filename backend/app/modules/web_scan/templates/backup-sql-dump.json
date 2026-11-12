@@ -1,0 +1,1 @@
+{"id":"backup-sql-dump","name":"Exposed SQL database dump","severity":"Critical","path":"/backup.sql","method":"GET","status":[200],"body_regex":["(?im)^\\s*(?:CREATE TABLE|INSERT INTO|-- MySQL dump|-- PostgreSQL database dump)"],"tags":["exposure","database","backup"]}

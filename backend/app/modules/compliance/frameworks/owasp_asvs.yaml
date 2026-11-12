@@ -1,0 +1,45 @@
+framework: "OWASP ASVS"
+controls:
+  - control_id: ASVS-1.2.1
+    title: Application identity and access control
+    description: Authentication and authorization controls are enforced.
+    tags: [auth]
+    max_severity: High
+  - control_id: ASVS-4.1.3
+    title: Access control enforcement
+    description: Protected resources enforce authorization server-side.
+    tags: [api, auth, authorization]
+    max_severity: High
+  - control_id: ASVS-14.4.3
+    title: HTTP security headers
+    description: Security headers are present and correctly configured.
+    tags: [web, headers]
+    max_severity: Medium
+  # Additional controls merged from mirsad-patch-v3.zip (Arabic-language,
+  # OWASP ASVS 4.0 chapter-level IDs) - broader chapter-level coverage
+  # alongside the more granular section-level entries above.
+  - control_id: ASVS-V4
+    title: "التحكم بالوصول (Access Control)"
+    description: "التحقق من عدم إمكانية الوصول غير المصرح به للموارد (IDOR/BOLA) عبر نقاط النهاية المكتشَفة."
+    tags: [idor, bola, authorization]
+    max_severity: High
+  - control_id: ASVS-V5
+    title: "التحقق من المدخلات والترميز (Validation, Sanitization, Encoding)"
+    description: "التأكد من عدم وجود ثغرات حقن (SQLi، XSS، إلخ) في المدخلات القابلة للوصول خارجيًا."
+    tags: [injection, sqli, xss]
+    max_severity: High
+  - control_id: ASVS-V9
+    title: "أمان الاتصال (Communications)"
+    description: "فرض TLS الحديث على كل نقاط النهاية العامة ورفض بروتوكولات/تشفير ضعيف."
+    tags: [weak-tls]
+    max_severity: High
+  - control_id: ASVS-V13
+    title: "أمان واجهات API"
+    description: "فحص نقاط نهاية API المكتشَفة ضد أخطاء التفويض ومخاطر تسريب البيانات."
+    tags: [api, authorization]
+    max_severity: High
+  - control_id: ASVS-V14
+    title: "الإعدادات والتصحيحات (Configuration)"
+    description: "التأكد من عدم كشف إصدارات/إعدادات حساسة (headers، ملفات إدارية، تصحيحات ناقصة)."
+    tags: [headers, exposure, admin-panel]
+    max_severity: Medium

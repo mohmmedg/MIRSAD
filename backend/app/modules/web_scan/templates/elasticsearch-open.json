@@ -1,0 +1,1 @@
+{"id":"elasticsearch-open","name":"Exposed Elasticsearch instance without authentication","severity":"Critical","path":"/_cluster/health","method":"GET","status":[200],"body_regex":["\"cluster_name\"\\s*:","\"number_of_nodes\"\\s*:"],"tags":["exposure","database","elasticsearch"]}

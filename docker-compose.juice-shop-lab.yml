@@ -1,0 +1,36 @@
+# Disposable OWASP Juice Shop target for authorised MIRSAD assessments.
+# Start: docker compose -f docker-compose.juice-shop-lab.yml up -d
+# Reset: docker compose -f docker-compose.juice-shop-lab.yml down && ... up -d
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:v20.3.0
+    container_name: juice-shop
+    restart: unless-stopped
+    environment:
+      # Keep V8 below the container cap so Node fails predictably rather than
+      # repeatedly exhausting the host/container memory under DAST traffic.
+      NODE_OPTIONS: --max-old-space-size=1536
+    networks:
+      juice_lab:
+        aliases: [juice-shop]
+    ports:
+      - "127.0.0.1:3000:3000"
+    mem_limit: 2g
+    memswap_limit: 2g
+    cpus: 1.0
+    pids_limit: 512
+    stop_grace_period: 30s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m
+    healthcheck:
+      # The official image is distroless and deliberately has no shell/wget.
+      test: ["CMD", "/nodejs/bin/node", "-e", "require('http').get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  juice_lab:
+    name: mirsad_juice_lab
+    external: true

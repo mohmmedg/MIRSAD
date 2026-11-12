@@ -1,0 +1,59 @@
+# PCI DSS v4.0 - only the requirements that an external attack-surface/vuln
+# scanner can meaningfully speak to (network/web/API exposure), not the full
+# standard (which also covers physical, process, and cardholder-data-flow
+# controls this platform cannot observe).
+framework: "PCI DSS"
+controls:
+  - control_id: PCI-1.3
+    title: Network segmentation from untrusted networks
+    description: Public-facing systems do not expose internal services/ports that should be segmented from untrusted networks.
+    tags: [network, exposure]
+    max_severity: High
+  - control_id: PCI-6.2
+    title: Secure software development / patching
+    description: Publicly reachable software is kept free of known, patchable vulnerabilities.
+    tags: [vulnerability, scanner]
+    max_severity: High
+  - control_id: PCI-6.4.2
+    title: Public-facing web application protection
+    description: Public-facing web applications are protected against common attacks (injection, auth bypass, misconfiguration).
+    tags: [web, auth, configuration]
+    max_severity: High
+  - control_id: PCI-11.3
+    title: External vulnerability scanning
+    description: External-facing systems and applications are scanned for vulnerabilities on a regular basis.
+    tags: [scanner, asm, vulnerability]
+    max_severity: Medium
+  - control_id: PCI-11.4
+    title: External network penetration testing
+    description: External attack surface is tested for exploitable authentication, authorization, and injection weaknesses.
+    tags: [auth, authorization, api]
+    max_severity: High
+  # Additional controls merged from mirsad-patch-v3.zip (Arabic-language,
+  # PCI DSS v4.0 exact requirement numbers) - kept alongside the entries
+  # above for more precise requirement-number citations in reports.
+  - control_id: PCI-6.3.1
+    title: "معالجة الثغرات الأمنية المكتشفة في الأصول ذات الواجهة الخارجية"
+    description: "تحديد وتصنيف الثغرات الأمنية للأصول العامة (المنافذ، الخدمات، تطبيقات الويب) والتعامل معها وفق خطورتها."
+    tags: [vulnerability, scanner]
+    max_severity: High
+  - control_id: PCI-6.4.1
+    title: "حماية تطبيقات الويب العامة من الهجمات المعروفة"
+    description: "فحص دوري أو استخدام WAF لتطبيقات الويب المكشوفة على الإنترنت ضد فئات الهجمات الشائعة (حقن، XSS، إلخ)."
+    tags: [web, injection, xss]
+    max_severity: High
+  - control_id: PCI-11.3.1
+    title: "فحص ثغرات خارجي ربع سنوي"
+    description: "إجراء فحص ثغرات خارجي كل ثلاثة أشهر على الأقل لكل الأصول العامة، وبعد أي تغيير جوهري في البنية."
+    tags: [scanner, vulnerability]
+    max_severity: Medium
+  - control_id: PCI-11.3.2
+    title: "معالجة الثغرات الحرجة قبل إعادة الفحص"
+    description: "معالجة كل ثغرة عالية/حرجة مكتشَفة خارجيًا ثم إعادة الفحص للتأكد من الإغلاق الفعلي."
+    tags: [vulnerability]
+    max_severity: High
+  - control_id: PCI-11.4.3
+    title: "اختبار اختراق خارجي دوري"
+    description: "اختبار اختراق خارجي سنوي على الأقل، وبعد أي تغيير جوهري في البنية التحتية العامة."
+    tags: [auth, authorization, api]
+    max_severity: High

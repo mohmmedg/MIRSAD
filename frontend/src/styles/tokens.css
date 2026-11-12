@@ -1,0 +1,164 @@
+/* styles/tokens.css
+ *
+ * هوية "مكتب التدقيق" (Audit Desk): الأداة تُقرأ كسجل قضية / تقرير تدقيق
+ * أمني حقيقي، مو "شاشة هاكر" سينمائية. سلّم الخطورة (Critical→Info) هو
+ * الطبقة اللونية المشبعة الوحيدة بكل الواجهة — أي لون آخر محايد تماماً،
+ * لأن اللون هنا بيانات لا زخرفة.
+ *
+ * v3: هوية "Instrument Blue" بدل التركواز/الزمرد (أصبح كليشيه أدوات الأمن
+ * المولّدة بالذكاء الاصطناعي)، خط IBM Plex Mono كعنصر بصري فعلي للعناوين
+ * والأرقام لا فقط للتسميات، وإزالة كاملة لكل تدرج لوني (gradient) —
+ * العمق يُبنى من طبقات قيم صلبة (void < panel < raised) لا من blur/glow.
+ * النمط الفاتح مُعاد بناؤه من الصفر كـ"ورق تقرير" (Audit Paper)، وليس
+ * انعكاساً حسابياً لقيم النمط الداكن.
+ */
+
+:root {
+  --bg-void: #11171a;
+  --bg-canvas: #141c20;
+  --bg-panel: #192226;
+  --bg-panel-raised: #202b30;
+  --bg-panel-hover: #27343a;
+  --bg-overlay: #2d3a40;
+  --line: #304047;
+  --line-strong: #43545c;
+  --line-glow: rgba(95, 143, 168, 0.22);
+
+  --text-primary: #e7edeb;
+  --text-muted: #a2b0b3;
+  --text-faint: #74858a;
+
+  --sev-critical: #d05a51;
+  --sev-critical-vivid: #ff3b4f;
+  --sev-critical-dim: #2b1b1a;
+  --sev-critical-glow: rgba(208, 90, 81, 0.15);
+  --sev-high: #d08b3e;
+  --sev-high-vivid: #ff941f;
+  --sev-high-dim: #2c2115;
+  --sev-high-glow: rgba(208, 139, 62, 0.14);
+  --sev-medium: #c2a64f;
+  --sev-medium-vivid: #ffd43b;
+  --sev-medium-dim: #292511;
+  --sev-medium-glow: rgba(194, 166, 79, 0.13);
+  --sev-low: #5e8d7d;
+  --sev-low-vivid: #22d17a;
+  --sev-low-dim: #192822;
+  --sev-low-glow: rgba(94, 141, 125, 0.13);
+  --sev-info: #7f9096;
+  --sev-info-vivid: #32bfff;
+  --sev-info-dim: #1e272b;
+  --sev-info-glow: rgba(127, 144, 150, 0.11);
+
+  --brand-mark: #b07a42;
+  --brand-mark-deep: #8d6031;
+  --accent-action: #5f8fa8;
+  --accent-action-hover: #78a5ba;
+  --accent-action-dim: #1d3039;
+  --accent-ok: #70a080;
+  --accent-ok-dim: #1b2a22;
+
+  --font-display: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 11px;
+  --rail-width: 270px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.22);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.25);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+
+  --glass-bg: rgba(25, 34, 38, 0.92);
+  --glass-bg-strong: rgba(20, 28, 32, 0.96);
+  --glass-border: rgba(231, 237, 235, 0.07);
+  --glass-border-top: rgba(231, 237, 235, 0.10);
+  --glass-blur: blur(16px) saturate(110%);
+
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-press: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-instant: 100ms;
+  --dur-fast: 180ms;
+  --dur-base: 280ms;
+  --dur-slow: 420ms;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --line: #5a564a;
+    --line-strong: #746e5f;
+    --text-muted: #d6d2c8;
+    --glass-bg: rgba(6, 6, 5, 0.96);
+    --glass-border: rgba(237, 233, 227, 0.18);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-bg: var(--bg-panel);
+    --glass-bg-strong: var(--bg-panel);
+    --glass-blur: none;
+  }
+}
+
+/* -- النمط الفاتح: "ورق تقرير تدقيق" — نظام مستقل مبني من الصفر، مو
+   انعكاس حسابي لقيم الداكن. كل لون هنا أُعيد ضبطه للتباين على خلفية
+   ورقية دافئة (مو أبيض ناصع)، والألوان المشبعة أُغمّقت للحفاظ على
+   وضوح القراءة (AA) بدل استخدام نفس القيم الفسفورية التي تضيء على أسود. -- */
+[data-theme="light"] {
+  --bg-void: #e9e6dc;
+  --bg-canvas: #eeece4;
+  --bg-panel: #f3f1e9;
+  --bg-panel-raised: #f8f7f1;
+  --bg-panel-hover: #e6e4da;
+  --bg-overlay: #dddacf;
+  --line: #d0d9d4;
+  --line-strong: #b6c2bc;
+  --line-glow: rgba(57, 101, 112, 0.18);
+
+  --text-primary: #182226;
+  --text-muted: #5c696d;
+  --text-faint: #7a8789;
+
+  --sev-critical: #a8443d;
+  --sev-critical-vivid: #ff3b4f;
+  --sev-critical-dim: #f3e3e0;
+  --sev-critical-glow: rgba(168, 68, 61, 0.10);
+  --sev-high: #a96828;
+  --sev-high-vivid: #ff941f;
+  --sev-high-dim: #f3e9dc;
+  --sev-high-glow: rgba(169, 104, 40, 0.10);
+  --sev-medium: #8e772c;
+  --sev-medium-vivid: #ffd43b;
+  --sev-medium-dim: #eee9d7;
+  --sev-medium-glow: rgba(142, 119, 44, 0.09);
+  --sev-low: #46695a;
+  --sev-low-vivid: #22d17a;
+  --sev-low-dim: #e1eae5;
+  --sev-low-glow: rgba(70, 105, 90, 0.09);
+  --sev-info: #667579;
+  --sev-info-vivid: #32bfff;
+  --sev-info-dim: #e6ebea;
+  --sev-info-glow: rgba(102, 117, 121, 0.08);
+
+  --brand-mark: #865a31;
+  --brand-mark-deep: #6e4825;
+  --accent-action: #3d7187;
+  --accent-action-hover: #315d70;
+  --accent-action-dim: #dfe9ed;
+  --accent-ok: #4f7d5d;
+  --accent-ok-dim: #e2ece5;
+
+  --glass-bg: rgba(243, 241, 233, 0.95);
+  --glass-bg-strong: rgba(238, 236, 228, 0.98);
+  --glass-border: rgba(24, 34, 38, 0.08);
+  --glass-border-top: rgba(24, 34, 38, 0.10);
+  --shadow-sm: 0 1px 2px rgba(24, 34, 38, 0.05);
+  --shadow-md: 0 8px 24px rgba(24, 34, 38, 0.08);
+  --shadow-lg: 0 18px 44px rgba(24, 34, 38, 0.09);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+

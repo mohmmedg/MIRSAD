@@ -1,0 +1,22 @@
+# Local secrets / environment files
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+
+# Large / generated artifacts
+*.tar
+api-scan-test.json
+
+# Persisted runtime logs
+logs/

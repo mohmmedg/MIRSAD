@@ -1,0 +1,1 @@
+{"id": "git-config-exposed", "name": "Git Config File Disclosure", "path": "/.git/config", "method": "GET", "severity": "Medium", "tags": ["exposure", "git", "config"], "status": [200], "body_regex": ["\\[core\\]"]}

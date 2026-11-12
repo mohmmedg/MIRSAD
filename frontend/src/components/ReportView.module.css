@@ -1,0 +1,171 @@
+.headerBlock {
+  margin-bottom: 22px;
+}
+
+.engineTagRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.engineTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-action);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(95, 143, 168, 0.1);
+  border: 1px solid rgba(95, 143, 168, 0.25);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.modelTag {
+  color: var(--text-faint);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 11px;
+}
+
+.summaryBlock {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  gap: 10px;
+}
+
+.summaryIcon {
+  color: var(--accent-action);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.summaryLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.summaryText {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+
+.findingsHeader {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.emptyState svg {
+  color: var(--accent-ok);
+}
+
+/* -- عرض Markdown (managerial / non_technical) كبطاقة "مستند" -- */
+
+.docCard {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  box-shadow: var(--shadow-md);
+  max-width: 760px;
+}
+
+.markdownBody {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.markdownBody h1 {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin: 0 0 16px;
+}
+
+.markdownBody h2 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 26px;
+  color: var(--accent-action);
+}
+
+.markdownBody h3 {
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.markdownBody strong {
+  color: var(--text-primary);
+}
+
+.markdownBody code {
+  background: var(--bg-void);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+
+.markdownBody hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 16px 0;
+}
+
+.markdownBody p {
+  margin: 8px 0;
+}
+
+.markdownBody ul {
+  padding-inline-start: 20px;
+}
+
+/* نمط "مبسّط" لغير التقني — خط أكبر، تباعد أوسع، إحساس أقل "تقني/console" */
+.plainMode {
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.plainMode h1 {
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+.plainMode h2 {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 17px;
+}

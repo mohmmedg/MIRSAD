@@ -1,0 +1,32 @@
+# Saudi Personal Data Protection Law (PDPL) - only the technical-security
+# angle a scanner can speak to (Art. 19/20 security-of-processing duties).
+# Lawfulness of processing, consent, and data-subject-rights obligations are
+# legal/process controls outside this platform's evidence model.
+framework: "PDPL"
+controls:
+  - control_id: PDPL-19
+    title: Technical security of personal data processing systems
+    description: Systems that process personal data are protected against unauthorized access and known vulnerabilities.
+    tags: [auth, authorization, vulnerability, scanner]
+    max_severity: High
+  - control_id: PDPL-20-BREACH-SURFACE
+    title: Breach-surface minimization
+    description: Externally exposed configuration does not unnecessarily widen the personal-data breach surface.
+    tags: [configuration, exposure, headers]
+    max_severity: Medium
+  # Additional controls merged from mirsad-patch-v3.zip (Arabic-language).
+  - control_id: PDPL-EXPOSURE-1
+    title: "منع الكشف غير المقصود عن بيانات شخصية"
+    description: "رصد نقاط النهاية العامة (API، لوحات إدارة، ملفات مؤقتة) التي قد تُسرّب بيانات شخصية."
+    tags: [exposure, api]
+    max_severity: High
+  - control_id: PDPL-EXPOSURE-2
+    title: "حماية قنوات نقل البيانات الشخصية"
+    description: "التأكد من استخدام TLS على كل نقطة نهاية تتعامل مع بيانات شخصية مكشوفة خارجيًا."
+    tags: [weak-tls]
+    max_severity: High
+  - control_id: PDPL-BREACH-READY
+    title: "الجاهزية لاكتشاف التسريب مبكرًا"
+    description: "مراقبة مستمرة للأصول الجديدة/المتغيرة التي قد تكشف بيانات شخصية دون قصد."
+    tags: [asset, scanner]
+    max_severity: Medium

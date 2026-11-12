@@ -1,0 +1,526 @@
+
+# MIRSAD DEFAULT STACK CONTRACT
+# `docker compose up -d` is sufficient. No security-results/security-tools profile
+# is required to enable scanner engines or DefectDojo. Scanner binaries, Nuclei
+# templates, Trivy DB and Playwright browsers are baked into the backend image
+# during `docker compose build`; ZAP and DefectDojo are ordinary default services.
+# All scanner and DefectDojo services are default services. No profiles are required.
+#
+# MIRSAD default stack: backend, worker, frontend, scanner tools, ZAP,
+# DefectDojo, Redis and one PostgreSQL 18.4 server.
+# Application logs are written to ./logs/app by backend and worker.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "25m"
+    max-file: "4"
+
+services:
+
+  # DefectDojo is a separate vulnerability-management service, analogous
+  # to the isolated ZAP daemon. Its own PostgreSQL/Valkey/media volumes keep
+  # DefectDojo data independent from MIRSAD's Supabase/Redis state.
+  defectdojo-nginx:
+    logging: *default-logging
+    image: defectdojo/defectdojo-nginx:3.3.200
+    depends_on:
+      defectdojo-uwsgi:
+        condition: service_started
+    environment:
+      NGINX_METRICS_ENABLED: "false"
+      DD_UWSGI_HOST: "defectdojo-uwsgi"
+      DD_UWSGI_PORT: "3031"
+    volumes:
+      - defectdojo-media:/usr/share/nginx/html/media
+    ports:
+      - "127.0.0.1:${DEFECTDOJO_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/login || curl -fsS -o /dev/null http://127.0.0.1:8080/login"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+    mem_limit: 512m
+    restart: unless-stopped
+
+  defectdojo-uwsgi:
+    logging: *default-logging
+    image: defectdojo/defectdojo-django:3.3.200
+    secrets:
+      - defectdojo_db_password
+    depends_on:
+      defectdojo-initializer:
+        condition: service_completed_successfully
+      postgres18:
+        condition: service_healthy
+      defectdojo-valkey:
+        condition: service_healthy
+    entrypoint: ["sh", "/run/defectdojo-db-entrypoint.sh", "/wait-for-it.sh", "postgres18:5432", "-t", "30", "--", "/entrypoint-uwsgi.sh"]
+    environment:
+      DD_DEBUG: "False"
+      DD_ALLOWED_HOSTS: "${DEFECTDOJO_ALLOWED_HOSTS:-localhost,127.0.0.1,defectdojo-nginx}"
+      DD_SITE_URL: "${DEFECTDOJO_SITE_URL:-http://localhost:8081}"
+      DD_CELERY_BROKER_URL: "redis://defectdojo-valkey:6379/0"
+      DD_SECRET_KEY: "${DEFECTDOJO_DJANGO_SECRET_KEY:?Set DEFECTDOJO_DJANGO_SECRET_KEY}"
+      DD_CREDENTIAL_AES_256_KEY: "${DEFECTDOJO_CREDENTIAL_AES_256_KEY:?Set DEFECTDOJO_CREDENTIAL_AES_256_KEY}"
+      DD_DATABASE_READINESS_TIMEOUT: "30"
+      DD_HASHCODE_FIELDS_PER_SCANNER: '{"MIRSAD Scan (SARIF)": ["title", "cwe", "line", "file_path", "description"]}'
+    volumes:
+      - defectdojo-media:/app/media
+      - type: bind
+        source: D:/MIRSAD-DATA/secrets/defectdojo-db-entrypoint.sh
+        target: /run/defectdojo-db-entrypoint.sh
+        read_only: true
+    mem_limit: 3g
+    restart: unless-stopped
+
+  defectdojo-celerybeat:
+    logging: *default-logging
+    image: defectdojo/defectdojo-django:3.3.200
+    secrets:
+      - defectdojo_db_password
+    volumes:
+      - type: bind
+        source: D:/MIRSAD-DATA/secrets/defectdojo-db-entrypoint.sh
+        target: /run/defectdojo-db-entrypoint.sh
+        read_only: true
+    depends_on:
+      defectdojo-initializer:
+        condition: service_completed_successfully
+      postgres18:
+        condition: service_healthy
+      defectdojo-valkey:
+        condition: service_healthy
+    entrypoint: ["sh", "/run/defectdojo-db-entrypoint.sh", "/wait-for-it.sh", "postgres18:5432", "-t", "30", "--", "/entrypoint-celery-beat.sh"]
+    environment:
+      DD_CELERY_BROKER_URL: "redis://defectdojo-valkey:6379/0"
+      DD_SECRET_KEY: "${DEFECTDOJO_DJANGO_SECRET_KEY:?Set DEFECTDOJO_DJANGO_SECRET_KEY}"
+      DD_CREDENTIAL_AES_256_KEY: "${DEFECTDOJO_CREDENTIAL_AES_256_KEY:?Set DEFECTDOJO_CREDENTIAL_AES_256_KEY}"
+      DD_DATABASE_READINESS_TIMEOUT: "30"
+    mem_limit: 1g
+    restart: unless-stopped
+
+  defectdojo-celeryworker:
+    logging: *default-logging
+    image: defectdojo/defectdojo-django:3.3.200
+    secrets:
+      - defectdojo_db_password
+    depends_on:
+      defectdojo-initializer:
+        condition: service_completed_successfully
+      postgres18:
+        condition: service_healthy
+      defectdojo-valkey:
+        condition: service_healthy
+    entrypoint: ["sh", "/run/defectdojo-db-entrypoint.sh", "/wait-for-it.sh", "postgres18:5432", "-t", "30", "--", "/entrypoint-celery-worker.sh"]
+    environment:
+      DD_CELERY_BROKER_URL: "redis://defectdojo-valkey:6379/0"
+      DD_SECRET_KEY: "${DEFECTDOJO_DJANGO_SECRET_KEY:?Set DEFECTDOJO_DJANGO_SECRET_KEY}"
+      DD_CREDENTIAL_AES_256_KEY: "${DEFECTDOJO_CREDENTIAL_AES_256_KEY:?Set DEFECTDOJO_CREDENTIAL_AES_256_KEY}"
+      DD_DATABASE_READINESS_TIMEOUT: "30"
+      DD_HASHCODE_FIELDS_PER_SCANNER: '{"MIRSAD Scan (SARIF)": ["title", "cwe", "line", "file_path", "description"]}'
+    volumes:
+      - defectdojo-media:/app/media
+      - type: bind
+        source: D:/MIRSAD-DATA/secrets/defectdojo-db-entrypoint.sh
+        target: /run/defectdojo-db-entrypoint.sh
+        read_only: true
+    mem_limit: 3g
+    restart: unless-stopped
+
+  defectdojo-initializer:
+    logging: *default-logging
+    image: defectdojo/defectdojo-django:3.3.200
+    secrets:
+      - defectdojo_db_password
+    volumes:
+      - type: bind
+        source: D:/MIRSAD-DATA/secrets/defectdojo-db-entrypoint.sh
+        target: /run/defectdojo-db-entrypoint.sh
+        read_only: true
+    depends_on:
+      postgres18:
+        condition: service_healthy
+    entrypoint: ["sh", "/run/defectdojo-db-entrypoint.sh", "sh", "-c", "python manage.py migrate --noinput && exec /entrypoint-initializer.sh"]
+    environment:
+      DD_ADMIN_USER: "${DEFECTDOJO_ADMIN_USER:-admin}"
+      DD_ADMIN_MAIL: "${DEFECTDOJO_ADMIN_MAIL:-admin@defectdojo.local}"
+      DD_ADMIN_FIRST_NAME: "MIRSAD"
+      DD_ADMIN_LAST_NAME: "Admin"
+      DD_ADMIN_PASSWORD: "${DEFECTDOJO_LOCAL_ADMIN_PASSWORD:?Set DEFECTDOJO_LOCAL_ADMIN_PASSWORD}"
+      DD_INITIALIZE: "${DEFECTDOJO_INITIALIZE:-true}"
+      DD_SECRET_KEY: "${DEFECTDOJO_DJANGO_SECRET_KEY:?Set DEFECTDOJO_DJANGO_SECRET_KEY}"
+      DD_CREDENTIAL_AES_256_KEY: "${DEFECTDOJO_CREDENTIAL_AES_256_KEY:?Set DEFECTDOJO_CREDENTIAL_AES_256_KEY}"
+      DD_DATABASE_READINESS_TIMEOUT: "30"
+    restart: "no"
+
+  postgres18:
+    logging: *default-logging
+    image: postgres:18.4-alpine
+    container_name: mirsad-postgres18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${UNIFIED_PG_ADMIN_PASSWORD:?Set UNIFIED_PG_ADMIN_PASSWORD in root .env}"
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - type: bind
+        source: "${MIRSAD_DATA_ROOT:-D:/MIRSAD-DATA}/postgres18-unified"
+        target: /var/lib/postgresql/data
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+    mem_limit: 2g
+    restart: unless-stopped
+
+  defectdojo-valkey:
+    logging: *default-logging
+    image: valkey/valkey:9.1.0-alpine
+    volumes:
+      - defectdojo-valkey:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 512m
+    restart: unless-stopped
+
+  # One-shot: creates a random ZAP API key in a named volume the first time the
+  # stack starts (no .env edit needed). ZAP reads it via start-zap.sh; backend and
+  # worker read it through ZAP_API_KEY_FILE. Existing keys are never overwritten.
+  zap-key-init:
+    image: docker:cli
+    volumes:
+      - zap-secrets:/s
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -eu
+        if [ ! -s /s/zap_api_key ]; then
+          umask 022
+          head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > /s/zap_api_key
+          echo "[zap-key-init] generated a new ZAP API key"
+        fi
+        chmod 644 /s/zap_api_key
+    restart: "no"
+
+  # OWASP ZAP daemon
+  # Build order during `docker compose build` is strictly sequential:
+  #   1) zap (built alone, nothing else downloads at the same time)
+  #   2) backend (waits for zap through additional_contexts service:zap)
+  #   3) frontend (waits for backend through additional_contexts service:backend)
+  zap:
+    logging: *default-logging
+    build:
+      context: ./zap
+      dockerfile: Dockerfile
+    image: mirsad-zap:2.17.0-pinned
+    shm_size: "1gb"
+    ports:
+      - "127.0.0.1:8082:8080"
+    command:
+      - start-zap.sh
+      - -Xmx${ZAP_HEAP:-3g}
+      - -daemon
+      - -host
+      - 0.0.0.0
+      - -port
+      - "8080"
+      - -config
+      - 'api.addrs.addr.name=(zap(:8080)?|127\..*|10\..*|172\.(1[6-9]|2[0-9]|3[01])\..*|192\.168\..*)'
+      - -config
+      - api.addrs.addr.regex=true
+      - -config
+      - autoupdate.autodownload=false
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    security_opt:
+      - "no-new-privileges:true"
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 536870912
+      - zap-home:/home/zap
+      - zap-secrets:/zap-secrets:ro
+    depends_on:
+      zap-key-init:
+        condition: service_completed_successfully
+    mem_limit: 6g
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null -H \"X-ZAP-API-Key: $$(cat /zap-secrets/zap_api_key)\" http://127.0.0.1:8080/JSON/core/view/version/"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    restart: unless-stopped
+
+  # Log cleaner retained for compatibility, but automatic deletion is disabled.
+  # Existing ./logs files are preserved on every normal `docker compose up`.
+  redis:
+    logging: *default-logging
+    image: redis:8-alpine
+    command:
+      - sh
+      - -c
+      - >
+        redis-server --appendonly yes --save 60 1000
+        --requirepass "$$REDIS_PASSWORD"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in root .env}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "$${REDIS_PASSWORD}" ping | grep PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 512m
+    restart: unless-stopped
+
+  backend:
+    logging: *default-logging
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      # Forces `docker compose build` to finish building zap before backend starts,
+      # so the ZAP image downloads alone. The context is not used by the Dockerfile.
+      additional_contexts:
+        zap_build_first: "service:zap"
+      args:
+        TRIVY_DB_REQUIRED: "true"
+    image: mirsad-backend:latest
+    env_file:
+      - path: ./backend/.env.production
+        required: true
+    environment:
+      DATABASE_URL: postgresql://mirsad:${LOCAL_PG_PASSWORD_URLENCODED:?Set LOCAL_PG_PASSWORD_URLENCODED in root .env}@postgres18:5432/mirsad
+      SCHEDULER_DATABASE_URL: postgresql://mirsad:${LOCAL_PG_PASSWORD_URLENCODED:?Set LOCAL_PG_PASSWORD_URLENCODED in root .env}@postgres18:5432/mirsad
+      DB_SSLMODE: "disable"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in root .env}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      ENABLE_NUCLEI: ${ENABLE_NUCLEI:-true}
+      EXTERNAL_ENGINE_PARALLELISM: ${EXTERNAL_ENGINE_PARALLELISM:-2}
+      ENABLE_ZAP: ${ENABLE_ZAP:-true}
+      ENABLE_SQLMAP: ${ENABLE_SQLMAP:-true}
+      ENABLE_GHAURI: ${ENABLE_GHAURI:-true}
+      ENABLE_FFUF: ${ENABLE_FFUF:-true}
+      ENABLE_TESTSSL: ${ENABLE_TESTSSL:-true}
+      ENABLE_SUBFINDER: ${ENABLE_SUBFINDER:-true}
+      ENABLE_HTTPX_PROBE: ${ENABLE_HTTPX_PROBE:-true}
+      ENABLE_TRIVY: ${ENABLE_TRIVY:-true}
+      ENABLE_SEMGREP: ${ENABLE_SEMGREP:-true}
+      ENABLE_GITLEAKS: ${ENABLE_GITLEAKS:-true}
+      ENABLE_TRUFFLEHOG: ${ENABLE_TRUFFLEHOG:-true}
+      ENABLE_SOURCE_INTELLIGENCE: ${ENABLE_SOURCE_INTELLIGENCE:-true}
+      ENABLE_SOURCE_MAP_ANALYSIS: ${ENABLE_SOURCE_MAP_ANALYSIS:-true}
+      ENABLE_PLAYWRIGHT: ${ENABLE_PLAYWRIGHT:-true}
+      ENABLE_ADVANCED_SECURITY: ${ENABLE_ADVANCED_SECURITY:-true}
+      ZAP_SERVICE_URL: ${ZAP_SERVICE_URL:-http://zap:8080}
+      ZAP_API_KEY_FILE: /zap-secrets/zap_api_key
+      DEFECTDOJO_ENABLED: ${DEFECTDOJO_ENABLED:-true}
+      DEFECTDOJO_URL: ${DEFECTDOJO_URL:-http://defectdojo-nginx:8080}
+      DEFECTDOJO_API_URL: ${DEFECTDOJO_API_URL:-http://defectdojo-nginx:8080}
+      DEFECTDOJO_API_TOKEN: ${DEFECTDOJO_API_TOKEN:-}
+      DB_AUTO_CREATE_SCHEMA: "true"
+      JOB_QUEUE_ENABLED: "true"
+      WORKER_MODE: "false"
+      EXPECTED_APP_PROCESSES: "3"
+      DB_POOL_TIMEOUT_SECONDS: ${DB_POOL_TIMEOUT_SECONDS_OVERRIDE:-60}
+      DB_POOL_RESERVE_CONNECTIONS: ${DB_POOL_RESERVE_CONNECTIONS_OVERRIDE:-10}
+      MIRSAD_HTTP_CLIENT_LOG_LEVEL: ${MIRSAD_HTTP_CLIENT_LOG_LEVEL:-WARNING}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://127.0.0.1:5173,http://localhost:5173}
+      ENFORCE_TARGET_SCOPE: ${ENFORCE_TARGET_SCOPE:-true}
+      ALLOWED_TARGETS: ${ALLOWED_TARGETS:?Set ALLOWED_TARGETS explicitly for production target scope}
+      MIRSAD_LOG_DIR: /app/logs/app
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres18:
+        condition: service_healthy
+      zap-key-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      zap:
+        condition: service_started
+      defectdojo-nginx:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    volumes:
+      - scanner-data:/app/data
+      - zap-secrets:/zap-secrets:ro
+      - ./logs:/app/logs
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=8)"
+        ]
+      interval: 15s
+      timeout: 10s
+      start_period: 60s
+      retries: 8
+    mem_limit: 4g
+    restart: unless-stopped
+
+  worker:
+    logging: *default-logging
+    image: mirsad-backend:latest
+    env_file:
+      - path: ./backend/.env.production
+        required: true
+    environment:
+      # The worker finds jobs before it knows their tenant and sweeps all tenants,
+      # so it needs a role that bypasses RLS. Create it once with
+      # supabase/provisioning/worker_role.sql; the API keeps the restricted role.
+      DATABASE_URL: postgresql://mirsad_worker:${WORKER_PG_PASSWORD_URLENCODED:?Run supabase/provisioning/worker_role.sql and set WORKER_PG_PASSWORD_URLENCODED in root .env}@postgres18:5432/mirsad
+      SCHEDULER_DATABASE_URL: postgresql://mirsad_worker:${WORKER_PG_PASSWORD_URLENCODED:?Run supabase/provisioning/worker_role.sql and set WORKER_PG_PASSWORD_URLENCODED in root .env}@postgres18:5432/mirsad
+      DB_SSLMODE: "disable"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in root .env}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      DB_AUTO_CREATE_SCHEMA: "true"
+      JOB_QUEUE_ENABLED: "true"
+      ENABLE_NUCLEI: ${ENABLE_NUCLEI:-true}
+      EXTERNAL_ENGINE_PARALLELISM: ${EXTERNAL_ENGINE_PARALLELISM:-2}
+      ENABLE_ZAP: ${ENABLE_ZAP:-true}
+      ENABLE_SQLMAP: ${ENABLE_SQLMAP:-true}
+      ENABLE_GHAURI: ${ENABLE_GHAURI:-true}
+      ENABLE_FFUF: ${ENABLE_FFUF:-true}
+      ENABLE_TESTSSL: ${ENABLE_TESTSSL:-true}
+      ENABLE_SUBFINDER: ${ENABLE_SUBFINDER:-true}
+      ENABLE_HTTPX_PROBE: ${ENABLE_HTTPX_PROBE:-true}
+      ENABLE_TRIVY: ${ENABLE_TRIVY:-true}
+      TRIVY_DB_REQUIRED: ${TRIVY_DB_REQUIRED:-false}
+      TRIVY_DB_BOOTSTRAP_RETRIES: ${TRIVY_DB_BOOTSTRAP_RETRIES:-0}
+      ENABLE_SOURCE_INTELLIGENCE: ${ENABLE_SOURCE_INTELLIGENCE:-true}
+      ENABLE_SOURCE_MAP_ANALYSIS: ${ENABLE_SOURCE_MAP_ANALYSIS:-true}
+      ENABLE_PLAYWRIGHT: ${ENABLE_PLAYWRIGHT:-true}
+      ENABLE_ADVANCED_SECURITY: ${ENABLE_ADVANCED_SECURITY:-true}
+      ENABLE_SEMGREP: ${ENABLE_SEMGREP:-true}
+      ENABLE_GITLEAKS: ${ENABLE_GITLEAKS:-true}
+      ENABLE_TRUFFLEHOG: ${ENABLE_TRUFFLEHOG:-true}
+      SOURCE_TOOL_TIMEOUT_SECONDS: ${SOURCE_TOOL_TIMEOUT_SECONDS:-7200}
+      SOURCE_INTELLIGENCE_MAX_SOURCE_SIZE: ${SOURCE_INTELLIGENCE_MAX_SOURCE_SIZE:-5000000}
+      SOURCE_INTELLIGENCE_MAX_JS_ASSETS: ${SOURCE_INTELLIGENCE_MAX_JS_ASSETS:-500}
+      SOURCE_INTELLIGENCE_MAX_SOURCE_MAPS: ${SOURCE_INTELLIGENCE_MAX_SOURCE_MAPS:-100}
+      SOURCE_INTELLIGENCE_MAX_MAP_SIZE: ${SOURCE_INTELLIGENCE_MAX_MAP_SIZE:-10000000}
+      NUCLEI_ALLOWED_TAGS: ${NUCLEI_ALLOWED_TAGS:-cve,misconfig,exposure,config,ssl,headers,technologies,default-login,panel,unauth,token,file,xss,sqli,lfi,rce,ssrf,redirect,takeover,wordpress,wp-plugin,dast,fuzz}
+      ZAP_SERVICE_URL: ${ZAP_SERVICE_URL:-http://zap:8080}
+      ZAP_API_KEY_FILE: /zap-secrets/zap_api_key
+      DEFECTDOJO_ENABLED: ${DEFECTDOJO_ENABLED:-true}
+      DEFECTDOJO_URL: ${DEFECTDOJO_URL:-http://defectdojo-nginx:8080}
+      DEFECTDOJO_API_URL: ${DEFECTDOJO_API_URL:-http://defectdojo-nginx:8080}
+      DEFECTDOJO_API_TOKEN: ${DEFECTDOJO_API_TOKEN:-}
+      WORKER_MODE: "true"
+      EXPECTED_APP_PROCESSES: "3"
+      DB_POOL_TIMEOUT_SECONDS: ${DB_POOL_TIMEOUT_SECONDS_OVERRIDE:-60}
+      DB_POOL_RESERVE_CONNECTIONS: ${DB_POOL_RESERVE_CONNECTIONS_OVERRIDE:-10}
+      WORKER_MAX_CONCURRENT_JOBS: ${WORKER_MAX_CONCURRENT_JOBS:-2}
+      MAX_CONCURRENT_ENGINES_PER_TARGET: ${MAX_CONCURRENT_ENGINES_PER_TARGET_OVERRIDE:-1}
+      MIRSAD_HTTP_CLIENT_LOG_LEVEL: ${MIRSAD_HTTP_CLIENT_LOG_LEVEL:-WARNING}
+      ENFORCE_TARGET_SCOPE: ${ENFORCE_TARGET_SCOPE:-true}
+      ALLOWED_TARGETS: ${ALLOWED_TARGETS:?Set ALLOWED_TARGETS explicitly for production target scope}
+      MIRSAD_LOG_DIR: /app/logs/app
+    depends_on:
+      postgres18:
+        condition: service_healthy
+      zap-key-init:
+        condition: service_completed_successfully
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      zap:
+        condition: service_started
+      defectdojo-nginx:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    volumes:
+      - scanner-data:/app/data
+      - zap-secrets:/zap-secrets:ro
+      - ./logs:/app/logs
+    command:
+      - "python"
+      - "-m"
+      - "app.worker"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/worker_heartbeat && test $$(($$(date +%s) - $$(stat -c %Y /tmp/worker_heartbeat))) -lt 45"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 4
+    stop_grace_period: 60s
+    mem_limit: 6g
+    restart: unless-stopped
+
+  frontend:
+    logging: *default-logging
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      # Keeps the build sequential (zap -> backend -> frontend). Not used by the Dockerfile.
+      additional_contexts:
+        backend_build_first: "service:backend"
+      args:
+        VITE_API_BASE_URL: ""
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        SUPABASE_PUBLIC_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+        VITE_ENABLE_LOCAL_FIRST: ${VITE_ENABLE_LOCAL_FIRST:-true}
+    env_file:
+      - ./frontend/.env
+    volumes:
+      # Apply Nginx configuration changes without rebuilding frontend assets.
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    mem_limit: 512m
+    ports:
+      - "127.0.0.1:5173:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 10s
+      start_period: 20s
+      retries: 8
+    restart: unless-stopped
+
+volumes:
+  zap-home:
+  zap-secrets:
+  redis-data:
+  scanner-data:
+  defectdojo-media:
+  defectdojo-valkey:
+
+secrets:
+  defectdojo_db_password:
+    file: D:/MIRSAD-DATA/secrets/defectdojo-db-password.txt

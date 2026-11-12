@@ -1,0 +1,1 @@
+{"id":"adminer-exposed","name":"Exposed Adminer database admin tool","severity":"High","path":"/adminer.php","method":"GET","status":[200],"body_regex":["(?i)<title>\\s*Adminer\\b"],"tags":["exposure","admin-panel","database"]}

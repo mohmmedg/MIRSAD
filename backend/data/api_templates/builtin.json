@@ -1,0 +1,131 @@
+{
+  "pack_id": "builtin-api-core",
+  "version": "1.0.0",
+  "templates": [
+    {
+      "id": "api-unauthenticated-success",
+      "title": "API endpoint accessible without authentication",
+      "severity": "Medium",
+      "match": {
+        "status_in": [
+          200,
+          201,
+          202,
+          204
+        ],
+        "require_auth_header": true,
+        "security_declared": true
+      },
+      "remediation": "Require authentication and authorization for endpoints that expose protected data or actions."
+    },
+    {
+      "id": "api-server-banner",
+      "title": "API server technology disclosure",
+      "severity": "Low",
+      "match": {
+        "header_present": "server"
+      },
+      "remediation": "Minimize unnecessary server/version disclosure in HTTP response headers."
+    },
+    {
+      "id": "api-methods-advertised",
+      "title": "API advertises an undeclared HTTP method",
+      "severity": "Low",
+      "match": {
+        "status_in": [
+          405
+        ],
+        "allow_header_present": true,
+        "allow_has_undeclared_method": true
+      },
+      "remediation": "Review the Allow header and API contract; remove methods that are not intentionally exposed."
+    },
+    {
+      "id": "llm-openai-compatible-endpoint-exposed",
+      "title": "OpenAI-compatible LLM endpoint reachable without authentication",
+      "severity": "High",
+      "match": {
+        "path_regex": [
+          "/v1/chat/completions",
+          "/v1/completions",
+          "/v1/embeddings",
+          "/v1/models"
+        ],
+        "status_in": [
+          200
+        ],
+        "require_auth_header": true
+      },
+      "remediation": "Require an authenticated, authorized caller for any LLM inference/embeddings/model-listing endpoint - an unauthenticated 200 here typically means anyone can consume model quota or extract information about deployed models (OWASP API Security Top 10: Broken Authentication; OWASP LLM Top 10: LLM10 Unbounded Consumption)."
+    },
+    {
+      "id": "llm-openai-compatible-endpoint-present",
+      "title": "OpenAI-compatible LLM endpoint discovered",
+      "severity": "Info",
+      "match": {
+        "path_regex": [
+          "/v1/chat/completions",
+          "/v1/completions",
+          "/v1/embeddings",
+          "/v1/models"
+        ]
+      },
+      "remediation": "Presence alone is not a vulnerability - confirm this route is intentionally exposed and covered by the same access controls as other sensitive API surface."
+    },
+    {
+      "id": "llm-agent-framework-endpoint-exposed",
+      "title": "Agent-framework route (LangServe/agent/chain invoke) reachable without authentication",
+      "severity": "High",
+      "match": {
+        "path_regex": [
+          "/langserve/",
+          "/agent/invoke",
+          "/chain/invoke",
+          "/api/agent/run",
+          "/api/tools/invoke"
+        ],
+        "status_in": [
+          200
+        ],
+        "require_auth_header": true
+      },
+      "remediation": "Agent/tool-invocation endpoints can trigger real side effects (tool calls, chained requests) - treat them like any other privileged action endpoint and require authentication/authorization (OWASP LLM Top 10: LLM08 Excessive Agency)."
+    },
+    {
+      "id": "llm-agent-framework-endpoint-present",
+      "title": "Agent-framework route discovered",
+      "severity": "Info",
+      "match": {
+        "path_regex": [
+          "/langserve/",
+          "/agent/invoke",
+          "/chain/invoke",
+          "/api/agent/run",
+          "/api/tools/invoke"
+        ]
+      },
+      "remediation": "Confirm this route is intentionally exposed and that any tool/function the agent can call is itself access-controlled."
+    },
+    {
+      "id": "llm-endpoint-missing-rate-limit-headers",
+      "title": "LLM endpoint has no visible rate-limit signaling",
+      "severity": "Low",
+      "match": {
+        "path_regex": [
+          "/v1/chat/completions",
+          "/v1/completions",
+          "/v1/embeddings",
+          "/langserve/",
+          "/agent/invoke",
+          "/chain/invoke"
+        ],
+        "header_absent": [
+          "x-ratelimit-limit",
+          "x-ratelimit-remaining",
+          "retry-after"
+        ]
+      },
+      "remediation": "Add rate-limit signaling and enforcement in front of LLM-backed endpoints to reduce resource/cost exhaustion risk (OWASP LLM Top 10: LLM10 Unbounded Consumption)."
+    }
+  ]
+}

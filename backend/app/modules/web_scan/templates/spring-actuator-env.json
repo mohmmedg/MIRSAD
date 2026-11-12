@@ -1,0 +1,1 @@
+{"id":"spring-actuator-env","name":"Exposed Spring Boot Actuator /env endpoint","severity":"High","path":"/actuator/env","method":"GET","status":[200],"body_regex":["\"activeProfiles\"","\"propertySources\""],"tags":["exposure","config","spring"]}

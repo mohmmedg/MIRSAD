@@ -1,0 +1,22 @@
+framework: "OWASP API Security"
+controls:
+  - control_id: API-2.1
+    title: Broken authentication
+    description: API endpoints require appropriate authentication.
+    tags: [api, auth]
+    max_severity: High
+  - control_id: API-5.1
+    title: Broken function level authorization
+    description: Authorization is enforced consistently for sensitive API functions.
+    tags: [api, authorization]
+    max_severity: High
+  - control_id: API-8.1
+    title: Security misconfiguration
+    description: API configuration does not expose unsafe defaults.
+    tags: [api, configuration]
+    max_severity: Medium
+  - control_id: API-10.1
+    title: Unsafe consumption of LLM/agent APIs
+    description: LLM-backed endpoints validate/sanitize inputs and outputs and are not exposed without authentication.
+    tags: [api, llm, ai, prompt-injection]
+    max_severity: High

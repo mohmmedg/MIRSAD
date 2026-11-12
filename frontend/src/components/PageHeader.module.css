@@ -1,0 +1,24 @@
+/* Shared page header — mirrors the administration header (icon chip, title, description,
+   actions, hairline) so every page opens with the same rhythm. Tokens only, no Tailwind. */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.lead { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.chip {
+  display: grid; place-items: center; flex-shrink: 0;
+  width: 42px; height: 42px; border-radius: var(--radius-md, 10px);
+  border: 1px solid var(--line); background: var(--bg-panel-raised);
+  color: var(--accent-action);
+}
+.text { min-width: 0; }
+.eyebrow { margin: 0 0 2px; font: 500 10px var(--font-mono); letter-spacing: .08em; color: var(--text-faint); text-transform: uppercase; }
+.title { margin: 0; font: 650 24px/1.2 var(--font-display); letter-spacing: -0.02em; color: var(--text-primary); }
+.description { margin: 4px 0 0; max-width: 62ch; font-size: 13px; line-height: 1.55; color: var(--text-muted); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

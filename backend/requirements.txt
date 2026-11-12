@@ -1,0 +1,37 @@
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+python-multipart==0.0.32
+httpx==0.28.1
+google-genai==2.25.0
+slowapi==0.1.10
+
+PyYAML==6.0.3
+
+reportlab==5.0.1
+# Explicitly pre-resolve ReportLab's transitive dependency; this avoids
+# resolver/index transient failures where pip reports no matching charset-normalizer.
+charset-normalizer==3.5.1
+arabic-reshaper==3.0.1
+python-bidi==0.6.11
+playwright==1.63.0
+SQLAlchemy==2.0.54
+psycopg2-binary==2.9.13
+# 2026-09-16: async driver for the request-serving path (session_scope in
+# app/core/database.py). psycopg2-binary above is kept for init_db()'s
+# one-time synchronous schema bootstrap at startup only.
+asyncpg==0.31.0
+aiosqlite==0.22.1
+redis==8.1.0
+
+PyJWT[crypto]==2.15.0
+cryptography>=50,<51
+
+# Public-Suffix-List aware domain parsing (subdomain discovery must treat
+# multi-tenant hosting suffixes like herokuapp.com/github.io/vercel.app as
+# the registrable boundary, not as a scannable "base domain").
+tldextract==5.3.2
+websockets==16.0
+# 2026-10-21: safe XML parsing for nmap/nessus imports (entity expansion, XXE)
+defusedxml==0.7.1

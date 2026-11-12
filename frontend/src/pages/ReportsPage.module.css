@@ -1,0 +1,27 @@
+.wrap { display: flex; flex-direction: column; gap: 14px; }
+.hint {
+  padding: 12px 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.exportBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin: 12px 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-raised);
+}
+.exportBar > span { margin-inline-end: auto; color: var(--text-muted); font: 11px var(--font-mono); }
+.exportBar button {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg-panel); padding: 7px 10px; color: var(--text-primary);
+}
+.exportBar button:hover { border-color: var(--accent-action); }

@@ -1,0 +1,62 @@
+.wrap { padding-bottom: 40px; }
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.header h2 { margin: 0 0 3px; font: 700 22px var(--font-display); letter-spacing: -0.02em; }
+.header p { margin: 0; color: var(--text-faint); font-size: 12px; }
+.liveBadge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 9px; border: 1px solid rgba(112,160,128,.25); border-radius: 999px;
+  color: var(--accent-ok); background: var(--accent-ok-dim); font: 9px var(--font-mono);
+}
+.liveBadge i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-ok); box-shadow: 0 0 10px rgba(112,160,128,.45); }
+
+.doneBanner {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; padding: 12px 14px;
+  border: 1px solid rgba(112,160,128,.28); border-radius: 12px;
+  background: var(--accent-ok-dim); color: var(--text-primary); font-size: 12px;
+}
+.doneBanner svg { color: var(--accent-ok); flex-shrink: 0; }
+.doneBanner span { flex: 1; }
+.doneBanner button {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--bg-panel-raised); color: var(--text-primary);
+  padding: 6px 11px; font: 600 11px var(--font-display);
+  transition: background var(--dur-fast) var(--ease-press);
+}
+.doneBanner button:hover { background: var(--bg-panel-hover); }
+
+/*
+ * كانت grid-template-columns ثابتة العرض (2 عمود) مع بطاقات بارتفاعات
+ * مختلفة (Full Assessment أطول بكثير من API Key مثلاً). auto-placement
+ * لـ CSS Grid يملأ الخلايا صفاً بصف بحسب ترتيب العناصر فقط، فإذا انتهى
+ * عمود قبل الآخر يبقى المكان المقابل فارغاً بارتفاع كامل — وهذا بالضبط
+ * الفراغ الكبير الذي ظهر أسفل بطاقة "Web Scan". استخدام column layout
+ * (تخطيط شبيه بالـ masonry) يجعل كل عمود يتدفّق بشكل مستقل فيلتصق
+ * بالبطاقة التالية مباشرة بدل ترك فراغ.
+ */
+.grid {
+  columns: 2;
+  column-gap: 14px;
+}
+.grid > :global(*) {
+  min-width: 0;
+  break-inside: avoid;
+  margin-bottom: 14px;
+}
+
+.hint {
+  margin-top: 16px; padding: 12px 14px;
+  border: 1px dashed var(--line-strong); border-radius: 12px;
+  color: var(--text-muted); font-size: 12px;
+}
+
+@media (max-width: 1000px) {
+  .grid { columns: 1; }
+}

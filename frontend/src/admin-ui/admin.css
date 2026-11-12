@@ -1,0 +1,120 @@
+/* src/admin-ui/admin.css
+ *
+ * Tailwind v4 + shadcn/ui, scoped to the administration area.
+ *  - Loaded only by the lazy admin chunk, so the rest of the app never ships it.
+ *  - No preflight: a small :where()-based reset below applies ONLY inside `.admin-ui`.
+ *  - Utilities are imported UNLAYERED on purpose: src/styles/global.css is unlayered
+ *    (e.g. `button { color: inherit }`) and would otherwise beat layered utilities.
+ *  - shadcn semantic tokens are mapped onto the existing MIRSAD tokens, so light/dark
+ *    (html[data-theme]) keeps working with no duplicated palette.
+ */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --font-sans: var(--font-body);
+}
+
+.admin-ui {
+  --background: var(--bg-canvas);
+  --foreground: var(--text-primary);
+  --card: var(--bg-panel);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-panel-raised);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent-action);
+  --primary-foreground: #0d1417;
+  --secondary: var(--bg-panel-raised);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-panel-hover);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--bg-panel-hover);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--sev-critical);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--accent-action);
+  --success: var(--accent-ok);
+  --success-soft: var(--accent-ok-dim);
+  --warning: var(--sev-high);
+  --warning-soft: var(--sev-high-dim);
+  --danger: var(--sev-critical);
+  --danger-soft: var(--sev-critical-dim);
+  --info: var(--accent-action);
+  --info-soft: var(--accent-action-dim);
+
+  font-family: var(--font-body);
+  color: var(--foreground);
+}
+
+[data-theme="light"] .admin-ui {
+  --primary-foreground: #f8f7f1;
+}
+
+/* Scoped replacement for Tailwind's preflight. It lives in a CSS layer so the (unlayered)
+   utilities always beat it: a zero-specificity rule placed after them would still win ties
+   and silently disable space-y-*, divide-y-* and friends. */
+@layer base {
+:where(.admin-ui, .admin-ui *, .admin-ui *::before, .admin-ui *::after) {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0 solid var(--border);
+}
+:where(.admin-ui) :where(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+  background-color: transparent;
+  border-radius: 0;
+}
+:where(.admin-ui) :where(h1, h2, h3, h4, h5, h6) {
+  font-size: inherit;
+  font-weight: inherit;
+}
+:where(.admin-ui) :where(table) {
+  border-collapse: collapse;
+  text-indent: 0;
+}
+:where(.admin-ui) :where(ul, ol) {
+  list-style: none;
+}
+:where(.admin-ui) :where(code, kbd, pre) {
+  font-family: var(--font-mono);
+}
+:where(.admin-ui) :where(a) {
+  color: inherit;
+  text-decoration: inherit;
+}
+}
+.admin-ui button:not(:disabled) {
+  cursor: pointer;
+}

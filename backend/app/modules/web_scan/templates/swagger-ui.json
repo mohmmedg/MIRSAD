@@ -1,0 +1,1 @@
+{"id":"swagger-ui","name":"Swagger UI exposed","severity":"Info","path":"/swagger-ui/","method":"GET","status":[200,301,302],"body_regex":["(?i)swagger-ui"] ,"tags":["api","discovery"]}

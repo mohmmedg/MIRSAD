@@ -1,0 +1,1 @@
+{"id":"git-head","name":"Exposed .git/HEAD","severity":"High","path":"/.git/HEAD","method":"GET","status":[200],"body_regex":["(?i)^ref:\\s+refs/heads/"] ,"tags":["exposure","git"]}
