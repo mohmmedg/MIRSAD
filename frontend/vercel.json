@@ -1,5 +1,17 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/v1/:path*",
+      "destination": "/api/backend-proxy?route=/api/v1/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/backend-proxy?route=/health"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
