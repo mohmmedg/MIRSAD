@@ -4,7 +4,7 @@ This is a resource-constrained **development/staging deployment**, not proof tha
 
 ## Prerequisites
 
-1. Create an Oracle **Always Free Ampere A1** Ubuntu VM in your home region, within your current Always Free allocation (typically 2 OCPU / 12 GB RAM maximum for continuous use). Verify the selected shape and costs in Oracle before creation; A1 capacity is not guaranteed. Configure an OCI network security list to allow only TCP 22 (from your trusted IP), 80, and 443. Do **not** open 6379 or 8000 to the Internet. Check outbound scanning against OCI's acceptable-use rules and use only targets you own or are expressly authorized to assess.
+1. Create an Oracle **Always Free Ampere A1** Ubuntu VM in your home region, within your current Always Free allocation (typically 2 OCPU / 12 GB RAM maximum for continuous use). Verify the selected shape and costs in Oracle before creation; A1 capacity is not guaranteed. Configure an OCI network security list to allow only TCP 22 (from your trusted IP), 80, and 443. Do **not** open 6379 or 8000 to the Internet. Review Oracle's security testing policy before any scanner use; only test expressly authorized targets, use non-aggressive modes, and complete any notification/approval obligations that apply.
 2. Point a DNS `A` record, e.g. `api.example.com`, to your Oracle instance's public IPv4. In OCI, reserve a static public IP if available in your free quota. Caddy needs port 80/443 reachable for automatic HTTPS.
 3. SSH into the VM, install Docker Engine and Compose plugin from [Docker's official Ubuntu installation guide](https://docs.docker.com/engine/install/ubuntu/). The login user needs Docker permissions; restrict who can use Docker because it grants root-equivalent access.
 4. Clone this repository and keep secrets **outside Git**.
@@ -28,8 +28,7 @@ Set these values in `backend/.env.production`: `ENVIRONMENT=production`, `SUPABA
 Create `deploy/oracle-free/.env` with only:
 ```dotenv
 MIRSAD_API_DOMAIN=api.example.com
-ACME_EMAIL=admin@example.com
-REDIS_PASSWORD=REPLACE_WITH_A_LONG_RANDOM_PASSWORD
+REDIS_PASSWORD=REPLACE_WITH_A_LONG_RANDOM_HEX_PASSWORD
 DATABASE_URL=REPLACE_WITH_SUPABASE_POOLER_URL
 SCHEDULER_DATABASE_URL=REPLACE_WITH_SUPABASE_POOLER_URL
 ALLOWED_TARGETS=your-owned-lab.example
