@@ -1,0 +1,32 @@
+name: Security Gate
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  security-gate:
+    runs-on: ubuntu-latest
+    env:
+      SECURITY_API_URL: ${{ secrets.SECURITY_API_URL }}
+      SECURITY_API_KEY: ${{ secrets.SECURITY_API_KEY }}
+      SECURITY_TARGET: ${{ secrets.SECURITY_TARGET }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: pip install -r backend/requirements.txt
+      - name: Run deployed scanner
+        run: python scripts/remote_scan_gate.py
+      - name: Enforce deterministic gate
+        if: ${{ hashFiles('security-results.json') != '' }}
+        run: python scripts/security_gate.py security-results.json --sarif security-results.sarif --critical-fail 0 --high-fail 0
+      - name: Upload SARIF
+        if: always() && hashFiles('security-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: security-results.sarif
